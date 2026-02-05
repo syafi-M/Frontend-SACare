@@ -1,0 +1,337 @@
+---
+// src/pages/cart/index.astro
+import Layout from '../../layouts/Layout.astro';
+import { formatCurrency } from '../../utils/format';
+---
+
+<Layout title="Shopping Cart">
+  <div class="m-5 mt-8 pb-32">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/layanan" class="p-2 hover:bg-neutral-100 rounded-lg transition-colors">
+          <div class="i-tabler-arrow-left text-2xl text-neutral-600"></div>
+        </a>
+        <h1 class="text-3xl font-bold text-neutral-900">Keranjang Belanja</h1>
+      </div>
+      <p class="text-neutral-600">
+        <span id="item-count">0</span> item dalam keranjang Anda
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Cart Items Section -->
+      <div class="lg:col-span-2">
+        <div id="cart-items-container" class="space-y-4">
+          <!-- Empty state akan ditampilkan jika keranjang kosong -->
+          <div class="flex flex-col items-center justify-center py-16 bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-200">
+            <div class="i-tabler-shopping-bag text-6xl text-neutral-300 mb-4"></div>
+            <p class="text-neutral-500 text-lg font-medium mb-2">Keranjang Anda kosong</p>
+            <p class="text-neutral-400 text-sm mb-6">Mulai tambahkan layanan untuk memulai</p>
+            <a
+              href="/layanan"
+              class="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-semibold rounded-xl transition-colors"
+            >
+              Mulai Belanja
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Section -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-24 space-y-6">
+          <!-- Order Summary Card -->
+          <div class="bg-white rounded-2xl border border-neutral-200 p-6 shadow-lg">
+            <h2 class="text-lg font-bold text-neutral-900 mb-6">Ringkasan Pesanan</h2>
+
+            <div class="space-y-4 mb-6 pb-6 border-b border-neutral-200">
+              <div class="flex justify-between items-center">
+                <span class="text-neutral-600">Subtotal</span>
+                <span id="summary-subtotal" class="font-semibold text-neutral-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-neutral-600">PPN (10%)</span>
+                <span id="summary-tax" class="font-semibold text-neutral-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-neutral-600">Ongkir</span>
+                <span class="font-semibold text-neutral-900">Gratis</span>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-6">
+              <span class="text-lg font-bold text-neutral-900">Total</span>
+              <span id="summary-total" class="text-2xl font-bold text-yellow-600">Rp 0</span>
+            </div>
+
+            <button
+              id="checkout-btn"
+              class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-neutral-900 font-bold py-4 rounded-xl transition-all duration-300 active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div class="flex items-center justify-center gap-2">
+                <span>Checkout</span>
+                <div class="i-tabler-arrow-right text-xl"></div>
+              </div>
+            </button>
+
+            <button
+              id="continue-shopping-btn"
+              class="w-full mt-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold py-3 rounded-xl transition-colors"
+            >
+              Lanjut Belanja
+            </button>
+          </div>
+
+          <!-- Promo Code Card -->
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
+            <h3 class="font-semibold text-blue-900 mb-3">Punya kode promo?</h3>
+            <div class="flex flex-col md:flex-row gap-2">
+              <input
+                type="text"
+                placeholder="Masukkan kode"
+                class="flex-1 px-4 py-2 bg-white border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              />
+              <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors">
+                Terapkan
+              </button>
+            </div>
+          </div>
+
+          <!-- Info Card -->
+          <div class="bg-neutral-50 rounded-2xl p-6 border border-neutral-200 space-y-3">
+            <div class="flex gap-3">
+              <div class="i-tabler-check text-green-500 text-xl flex-shrink-0 mt-0.5"></div>
+              <div>
+                <p class="font-semibold text-neutral-900 text-sm">Pengiriman Tenaga Cepat</p>
+                <p class="text-neutral-600 text-xs">Dalam 2-4 jam</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="i-tabler-shield-check text-blue-500 text-xl flex-shrink-0 mt-0.5"></div>
+              <div>
+                <p class="font-semibold text-neutral-900 text-sm">Pembayaran Aman</p>
+                <p class="text-neutral-600 text-xs">Enkripsi SSL 256-bit</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="i-tabler-headphones text-purple-500 text-xl flex-shrink-0 mt-0.5"></div>
+              <div>
+                <p class="font-semibold text-neutral-900 text-sm">Dukungan 24/7</p>
+                <p class="text-neutral-600 text-xs">Tim kami siap membantu</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .cart-item {
+    animation: slideIn 0.3s ease-out forwards;
+  }
+</style>
+
+<script>
+  import { cartManager } from '../../services/cartService';
+
+  declare global {
+    interface Window {
+      removeFromCart: (serviceId: number) => void;
+      updateQuantity: (serviceId: number, quantity: number) => void;
+      updateDuration: (serviceId: number, duration: number) => void;
+    }
+  }
+
+  const cartItemsContainer = document.getElementById('cart-items-container');
+  const itemCountEl = document.getElementById('item-count');
+  const checkoutBtn = document.getElementById('checkout-btn') as HTMLButtonElement;
+  const continueShoppingBtn = document.getElementById('continue-shopping-btn');
+
+  function renderCart() {
+    const cart = cartManager.getCart();
+
+    // Update item count
+    itemCountEl!.textContent = String(cart.totalItems);
+
+    if (cart.items.length === 0) {
+      cartItemsContainer!.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-16 bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-200">
+          <div class="i-tabler-shopping-bag text-6xl text-neutral-300 mb-4"></div>
+          <p class="text-neutral-500 text-lg font-medium mb-2">Keranjang Anda kosong</p>
+          <p class="text-neutral-400 text-sm mb-6">Mulai tambahkan layanan untuk memulai</p>
+          <a
+            href="/layanan"
+            class="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-semibold rounded-xl transition-colors"
+          >
+            Mulai Belanja
+          </a>
+        </div>
+      `;
+      checkoutBtn!.disabled = true;
+      return;
+    }
+
+    // Render cart items
+    cartItemsContainer!.innerHTML = cart.items
+      .map(
+        (item, index) => `
+          <div class="cart-item bg-white rounded-2xl border border-neutral-200 p-6 hover:shadow-lg transition-shadow" style="animation-delay: ${index * 100}ms">
+            <div class="flex gap-4">
+              <!-- Image -->
+              <div class="flex-shrink-0">
+                <img
+                  src="${item.img}"
+                  alt="${item.name}"
+                  class="w-24 h-24 object-cover rounded-xl"
+                />
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1">
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 class="font-bold text-neutral-900 text-lg">${item.name}</h3>
+                    <p class="text-neutral-600 text-sm mt-1">${item.description}</p>
+                  </div>
+                  <button
+                    onclick="window.removeFromCart(${item.id})"
+                    class="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    aria-label="Remove item"
+                  >
+                    <div class="i-tabler-trash text-xl"></div>
+                  </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex gap-4 mt-4">
+                  <div class="flex items-center gap-2">
+                    <span class="text-neutral-600 text-sm">Quantity:</span>
+                    <div class="flex items-center gap-2 bg-neutral-100 rounded-lg p-1">
+                      <button
+                        onclick="window.updateQuantity(${item.id}, ${item.quantity - 1})"
+                        class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
+                      >
+                        <div class="i-tabler-minus text-lg"></div>
+                      </button>
+                      <span class="w-8 text-center font-semibold text-neutral-900">${item.quantity}</span>
+                      <button
+                        onclick="window.updateQuantity(${item.id}, ${item.quantity + 1})"
+                        class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
+                      >
+                        <div class="i-tabler-plus text-lg"></div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <span class="text-neutral-600 text-sm">Duration:</span>
+                    <div class="flex items-center gap-2 bg-neutral-100 rounded-lg p-1">
+                      <button
+                        onclick="window.updateDuration(${item.id}, ${item.duration - 1})"
+                        class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
+                      >
+                        <div class="i-tabler-minus text-lg"></div>
+                      </button>
+                      <span class="w-8 text-center font-semibold text-neutral-900">${item.duration}h</span>
+                      <button
+                        onclick="window.updateDuration(${item.id}, ${item.duration + 1})"
+                        class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
+                      >
+                        <div class="i-tabler-plus text-lg"></div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Price -->
+                <div class="mt-4 pt-4 border-t border-neutral-200 flex justify-between items-center">
+                  <span class="text-neutral-600">Unit Price:</span>
+                  <span class="font-semibold text-neutral-900">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price)}/h</span>
+                </div>
+
+                <!-- Total -->
+                <div class="mt-2 flex justify-between items-center">
+                  <span class="font-bold text-neutral-900">Total:</span>
+                  <span class="text-xl font-bold text-yellow-600">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price * item.quantity * item.duration)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      )
+      .join('');
+
+    // Update summary
+    const taxRate = 0.1;
+    const tax = Math.round(cart.totalPrice * taxRate);
+    const total = cart.totalPrice + tax;
+
+    document.getElementById('summary-subtotal')!.textContent = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(cart.totalPrice);
+
+    document.getElementById('summary-tax')!.textContent = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(tax);
+
+    document.getElementById('summary-total')!.textContent = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(total);
+
+    // Enable checkout button
+    checkoutBtn!.disabled = false;
+  }
+
+  // Global functions
+  window.removeFromCart = (serviceId: number) => {
+    cartManager.removeFromCart(serviceId);
+    renderCart();
+  };
+
+  window.updateQuantity = (serviceId: number, quantity: number) => {
+    if (quantity > 0) {
+      cartManager.updateQuantity(serviceId, quantity);
+      renderCart();
+    }
+  };
+
+  window.updateDuration = (serviceId: number, duration: number) => {
+    if (duration > 0) {
+      cartManager.updateDuration(serviceId, duration);
+      renderCart();
+    }
+  };
+
+  // Event listeners
+  continueShoppingBtn?.addEventListener('click', () => {
+    window.location.href = '/layanan';
+  });
+
+  checkoutBtn?.addEventListener('click', () => {
+    // TODO: Implement checkout logic
+    alert('Checkout functionality coming soon!');
+  });
+
+  // Initial render
+  renderCart();
+</script>

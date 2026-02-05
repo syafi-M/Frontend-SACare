@@ -1,0 +1,28 @@
+---
+// Import icons jika menggunakan preset-icons
+// Pastikan paket @iconify-json/tabler dan @iconify-json/lucide terinstal
+---
+
+<nav class="flex items-center justify-between h-16 px-4 bg-white">
+  
+  <!-- Left Side: Menu Icon and Logo -->
+  <div class="flex items-center space-x-4">
+    <!-- Search Bar Placeholder -->
+    <div class="relative">
+        <input type="text" placeholder="Search for home services" class="w-full p-3 pl-10 rounded-lg focus:outline-none bg-white">
+        <div class="i-tabler-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></div>
+    </div>
+    </div>
+  <!-- Right Side: Notification Icon -->
+  <div>
+    <a href="/cart" class="relative text-gray-600 hover:text-gray-800 focus:outline-none">
+      <!-- Ikon Notifikasi -->
+      <div class="i-tabler-shopping-cart text-2xl"></div>
+
+      <!-- Badge Notifikasi (Angka 2) -->
+      <span class="absolute top-0 right-0 inline-flex items-center justify-center text-center min-w-5 min-h-5 text-xs font-semibold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">
+        2
+      </span>
+    </a>
+  </div>
+</nav>

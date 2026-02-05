@@ -1,0 +1,88 @@
+---
+import { actions } from 'astro:actions';
+
+const result = Astro.getActionResult(actions.loginWithGoogle);
+
+if (result?.data && 'success' in result.data && result.data.success) {
+    Astro.redirect('/homepage');
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro Basics</title>
+	</head>
+	<body>
+	<main class="flex flex-col items-center justify-start my-10 w-full min-h-full max-w-sm bg-white p-8 rounded-lg shadow-lg">
+        <!-- Logo & Title Section -->
+        <div class="text-center mb-8">
+            <!-- Ikon menggunakan preset-icons -->
+            <div class="mx-auto mb-4 bg-yellow-400 p-3 rounded-xl shadow-md w-max">
+                 <!-- Menggunakan ukuran ikon yang cukup besar -->
+                <div class="i-tabler-home text-gray-900 text-3xl"></div>
+            </div>
+            <h1 class="text-xl font-semibold text-gray-800">Home Service SAC</h1>
+            <p class="text-gray-500 text-sm mt-1">Layanan rumah profesional</p>
+        </div>
+
+        <form method="POST" action={actions.loginWithGoogle} class="w-full">
+            <button type="submit" class="w-full flex items-center justify-center p-3 mb-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                <div class="i-logos-google-icon mr-2 text-lg"></div>
+                Lanjutkan dengan Google
+            </button>
+        </form>
+
+        <!-- Divider ATAU EMAIL -->
+        <div class="flex items-center my-6">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="flex-shrink mx-4 text-gray-500 text-xs">ATAU EMAIL</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <!-- Form Section -->
+        <form class="w-full">
+            <input 
+                type="email" 
+                placeholder="Alamat email" 
+                class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            />
+            
+            <!-- Tombol Masuk -->
+            <!-- <button type="submit" class="w-full p-3 bg-neutral-800 hover:bg-neutral-900 text-white rounded-xl font-semibold transition-colors shadow-md">
+                Masuk
+            </button> -->
+            <a href="/homepage" type="submit" class="w-full p-3 bg-neutral-800 hover:bg-neutral-900 text-white rounded-xl font-semibold transition-colors shadow-md">
+                Masuk
+            </a>
+        </form>
+
+        <!-- Link Sign Up -->
+        <p class="text-center mt-6 text-sm text-gray-600">
+            Belum punya akun? 
+            <a href="#" class="text-blue-600 font-semibold hover:underline">Daftar sekarang</a>
+        </p>
+        
+        <!-- Syarat & Ketentuan -->
+        <p class="text-center mt-8 text-xs text-gray-400 px-4">
+            DENGAN MASUK, ANDA MENYETUJUI <a href="#" class="text-blue-400 hover:underline">KETENTUAN LAYANAN & KEBIJAKAN PRIVASI</a>.
+        </p>
+
+	</main>
+</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+</style>
+

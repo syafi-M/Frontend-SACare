@@ -1,0 +1,518 @@
+---
+// src/pages/layanan/index.astro
+import Layout from '../../layouts/Layout.astro';
+import Select from '../../components/Select.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import { serviceApi } from '../../services/serviceApi';
+import { SORT_OPTIONS } from '../../types/service';
+
+const initialServices = await serviceApi.getAllServices('popular');
+
+// Find most popular service
+const mostPopularId = initialServices.reduce((prev, current) =>
+  prev.rateCount > current.rateCount ? prev : current
+).id;
+---
+
+<Layout title="Home Service">
+  <div class="m-5 mt-8 pb-32">
+    <div class="mb-8" style="animation: fadeIn 0.4s ease-out forwards;">
+      <p class="font-semibold uppercase text-neutral-500/70 text-sm tracking-wide">
+        Services • Jakarta
+      </p>
+      <h1 class="text-4xl font-bold text-neutral-800 mt-2">Browse Services</h1>
+    </div>
+
+    <Select
+      id="sort-filter"
+      label="Sort By:"
+      options={[...SORT_OPTIONS]}
+      className="mb-8"
+      style="animation: fadeIn 0.4s ease-out 0.2s forwards;"
+    />
+
+    <div
+      id="services-list"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      role="region"
+      aria-label="Services catalog"
+    >
+      {initialServices.map((service, index) => (
+        <div
+          style={`animation: fadeIn 0.4s ease-out ${300 + index * 100}ms forwards;`}
+          onclick={`window.openServiceModal(${service.id})`}
+          class="cursor-pointer"
+        >
+          <ServiceCard
+            service={service}
+            isPopular={service.id === mostPopularId}
+          />
+        </div>
+      ))}
+    </div>
+
+    <!-- Loading State -->
+    <div
+      id="loading-indicator"
+      class="hidden fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50"
+      style="animation: fadeIn 0.3s ease-out forwards;"
+    >
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-neutral-200 border-t-neutral-800 rounded-full animate-spin"></div>
+        <p class="text-neutral-600 font-medium">Sorting services...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Detail Modal -->
+  <div
+    id="service-modal"
+    class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm transition-all duration-300"
+    onclick="if(event.target.id === 'service-modal') window.closeServiceModal()"
+  >
+    <div
+      id="modal-content"
+      class="bg-white w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-all duration-300 max-h-[90vh] overflow-y-auto"
+    >
+      <!-- Modal Header -->
+      <div id="modal-header" class="sticky top-0 bg-white border-b border-neutral-200 p-6 flex items-center justify-between rounded-t-3xl">
+        <h2 id="modal-title" class="text-2xl font-bold text-neutral-900">Service Detail</h2>
+        <button
+          onclick="window.closeServiceModal()"
+          class="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+          aria-label="Close modal"
+        >
+          <div class="i-tabler-x text-2xl text-neutral-600"></div>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-6">
+        <!-- Image Gallery -->
+        <div class="relative rounded-2xl overflow-hidden bg-neutral-100">
+          <img
+            id="modal-image"
+            src=""
+            alt="Service image"
+            class="w-full h-96 object-cover"
+          />
+          <div id="modal-badge" class="absolute top-4 left-4 bg-yellow-500/90 backdrop-blur-md rounded-full px-4 py-2 shadow-md hidden">
+            <span class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
+              <i class="i-tabler-crown"></i>
+              Most Booked
+            </span>
+          </div>
+          <div class="absolute top-4 right-4 flex items-center gap-2 bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-md">
+            <i class="i-tabler-star-filled text-yellow-500"></i>
+            <span id="modal-rating" class="font-semibold text-neutral-900">4.8</span>
+            <span id="modal-reviews" class="text-neutral-600 text-sm">(120)</span>
+          </div>
+        </div>
+
+        <!-- Service Info -->
+        <div>
+          <h1 id="modal-service-name" class="text-3xl font-bold text-neutral-900 mb-2">Service Name</h1>
+          <p id="modal-service-description" class="text-neutral-600 text-lg leading-relaxed">Service description</p>
+        </div>
+
+        <!-- Price Section -->
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200">
+          <div class="flex justify-between items-baseline mb-4">
+            <span class="text-neutral-600">Price per Hour</span>
+            <span id="modal-price" class="text-4xl font-bold text-neutral-900">Rp 150.000</span>
+          </div>
+          <p class="text-sm text-neutral-600">Harga sudah termasuk semua layanan profesional</p>
+        </div>
+
+        <!-- Service Details -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="i-tabler-users text-yellow-500 text-xl"></i>
+              <span class="font-semibold text-neutral-900">Professional Team</span>
+            </div>
+            <p class="text-sm text-neutral-600">Tim bersertifikat dan berpengalaman</p>
+          </div>
+
+          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="i-tabler-clock text-blue-500 text-xl"></i>
+              <span class="font-semibold text-neutral-900">Flexible Schedule</span>
+            </div>
+            <p class="text-sm text-neutral-600">Booking sesuai jam kenyamanan Anda</p>
+          </div>
+
+          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="i-tabler-shield-check text-green-500 text-xl"></i>
+              <span class="font-semibold text-neutral-900">Guaranteed Quality</span>
+            </div>
+            <p class="text-sm text-neutral-600">Kepuasan pelanggan 100% terjamin</p>
+          </div>
+
+          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="i-tabler-truck-delivery text-purple-500 text-xl"></i>
+              <span class="font-semibold text-neutral-900">Fast Delivery</span>
+            </div>
+            <p class="text-sm text-neutral-600">Pengiriman dalam 2-4 jam</p>
+          </div>
+        </div>
+
+        <!-- Customer Reviews Preview -->
+        <div class="border-t border-neutral-200 pt-6">
+          <h3 class="text-lg font-bold text-neutral-900 mb-4">Customer Reviews</h3>
+          <div class="space-y-3">
+            <div class="bg-neutral-50 rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="flex">
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                </div>
+                <span class="font-semibold text-neutral-900">Excellent Service</span>
+              </div>
+              <p class="text-sm text-neutral-600">"Sangat memuaskan, tim profesional dan hasil kerja bagus!"</p>
+              <p class="text-xs text-neutral-500 mt-2">- Ahmad K.</p>
+            </div>
+
+            <div class="bg-neutral-50 rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="flex">
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
+                </div>
+                <span class="font-semibold text-neutral-900">Very Recommended</span>
+              </div>
+              <p class="text-sm text-neutral-600">"Puas banget, cepat dan rapi. Akan order lagi!"</p>
+              <p class="text-xs text-neutral-500 mt-2">- Siti M.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="sticky bottom-0 bg-white border-t border-neutral-200 p-6 space-y-3 rounded-b-3xl">
+        <button
+          onclick="window.addToCartFromModal()"
+          class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-neutral-900 font-bold py-4 rounded-xl transition-all duration-300 active:scale-95 shadow-lg flex items-center justify-center gap-2"
+        >
+          <i class="i-tabler-shopping-cart text-xl"></i>
+          Add to Cart
+        </button>
+        <button
+          onclick="window.closeServiceModal()"
+          class="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold py-3 rounded-xl transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  :global(.service-card) {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(.service-card:hover) {
+    transform: translateY(-4px);
+  }
+
+  :global(.animate-fade-out) {
+    animation: fadeOut 0.3s ease-out forwards;
+  }
+
+  :global(.opacity-50) {
+    opacity: 0.5;
+  }
+
+  :global(.pointer-events-none) {
+    pointer-events: none;
+  }
+
+  #modal-content {
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  #service-modal:not(.hidden) {
+    animation: fadeIn 0.3s ease-out;
+  }
+</style>
+
+<script>
+  import { actions } from 'astro:actions';
+  import { serviceApi } from '../../services/serviceApi';
+  import { cartManager } from '../../services/cartService';
+
+  const selectEl = document.querySelector('#sort-filter') as HTMLSelectElement;
+  const container = document.querySelector('#services-list') as HTMLElement;
+  const loadingIndicator = document.querySelector('#loading-indicator') as HTMLElement;
+  const serviceModal = document.getElementById('service-modal');
+
+  let currentServiceId: number | null = null;
+
+  // Store services untuk modal
+  let servicesCache: any[] = [];
+
+  // Open modal
+  window.openServiceModal = async (serviceId: number) => {
+    currentServiceId = serviceId;
+    const service = servicesCache.find(s => s.id === serviceId) || await serviceApi.getServiceById(serviceId);
+
+    if (!service) {
+      console.error('Service not found');
+      return;
+    }
+
+    // Update modal content
+    document.getElementById('modal-title')!.textContent = service.name;
+    document.getElementById('modal-service-name')!.textContent = service.name;
+    document.getElementById('modal-service-description')!.textContent = service.description;
+    document.getElementById('modal-image')!.src = service.img;
+    document.getElementById('modal-rating')!.textContent = String(service.rate);
+    document.getElementById('modal-reviews')!.textContent = `(${service.rateCount})`;
+    document.getElementById('modal-price')!.textContent = `Rp ${service.price.toLocaleString('id-ID')}`;
+
+    // Show/hide badge
+    const badge = document.getElementById('modal-badge');
+    const allServices = servicesCache;
+    const mostPopular = allServices.reduce((prev: any, current: any) =>
+      prev.rateCount > current.rateCount ? prev : current
+    );
+
+    if (service.id === mostPopular.id && badge) {
+      badge.classList.remove('hidden');
+    } else if (badge) {
+      badge.classList.add('hidden');
+    }
+
+    // Show modal
+    serviceModal?.classList.remove('hidden');
+  };
+
+  // Close modal
+  window.closeServiceModal = () => {
+    serviceModal?.classList.add('hidden');
+    currentServiceId = null;
+  };
+
+  // Add to cart from modal
+  window.addToCartFromModal = async () => {
+    if (!currentServiceId) return;
+
+    const service = servicesCache.find(s => s.id === currentServiceId);
+    if (!service) return;
+
+    cartManager.addToCart(service, 1, 1);
+
+    // Show success message
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-24 right-4 bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg z-50 flex items-center gap-2 animate-slide-up';
+    toast.innerHTML = `
+      <i class="i-tabler-check text-xl"></i>
+      <span>${service.name} ditambahkan ke keranjang</span>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+
+    window.closeServiceModal();
+  };
+
+  // Initial render
+  async function init() {
+    const initial = await serviceApi.getAllServices('popular');
+    servicesCache = initial;
+
+    // Render initial services
+    renderServices(initial, initial.reduce((prev: any, current: any) =>
+      prev.rateCount > current.rateCount ? prev : current
+    ).id);
+  }
+
+  function renderServices(services: any[], mostPopularId: number) {
+    servicesCache = services;
+
+    const html = services
+      .map((service, index) => {
+        const isMostPopular = service.id === mostPopularId;
+        return `
+          <div
+            style="animation: fadeIn 0.4s ease-out ${index * 80}ms forwards; cursor: pointer;"
+            onclick="window.openServiceModal(${service.id})"
+          >
+            <article
+              class="service-card border border-neutral-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
+              data-service-id="${service.id}"
+            >
+              <div class="relative overflow-hidden bg-neutral-100">
+                <img
+                  src="${service.img}"
+                  alt="${service.name}"
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-64 object-cover rounded-t-xl transition-transform duration-500 group-hover:scale-110"
+                />
+                ${isMostPopular ? `
+                  <div class="absolute top-4 left-4 bg-yellow-500/90 backdrop-blur-md rounded-full px-3 py-1 shadow-md" style="animation: slideInRight 0.3s ease-out ${index * 40}ms forwards;">
+                    <span class="text-xs font-semibold text-neutral-800 flex items-center gap-1">
+                      <i class="i-tabler-crown text-base"></i>
+                      Most Booked
+                    </span>
+                  </div>
+                ` : ''}
+                <div class="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-md rounded-full px-3 py-1 shadow-md" style="animation: slideInRight 0.3s ease-out ${100 + index * 40}ms forwards;">
+                  <i class="i-tabler-star-filled text-xs text-yellow-500"></i>
+                  <span class="text-xs font-semibold text-neutral-800">${service.rate}</span>
+                  <span class="text-neutral-700/70 text-[10px]">(${service.rateCount})</span>
+                </div>
+              </div>
+              <div class="p-6 flex flex-col h-full">
+                <div class="flex-grow mb-4">
+                  <h3 class="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-neutral-900 transition-colors duration-200">${service.name}</h3>
+                  <p class="text-neutral-600 text-sm line-clamp-2 group-hover:text-neutral-700 transition-colors duration-200">${service.description}</p>
+                </div>
+                <div class="flex justify-between items-center pt-4 border-t border-neutral-100 group-hover:border-neutral-200 transition-colors duration-200">
+                  <p class="text-xl font-bold text-neutral-800 group-hover:text-neutral-900 transition-colors duration-200">
+                    Rp ${service.price.toLocaleString('id-ID')}
+                    <span class="text-xs text-neutral-500 font-normal"> / jam</span>
+                  </p>
+                  <button
+                    class="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition-all duration-200 font-medium text-sm active:scale-95 focus:ring-2 focus:ring-neutral-800 focus:ring-offset-2"
+                    aria-label="View details"
+                    onclick="event.stopPropagation(); window.openServiceModal(${service.id})"
+                  >
+                    Details
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        `;
+      })
+      .join('');
+
+    container!.innerHTML = html;
+  }
+
+  if (selectEl && container) {
+    selectEl.addEventListener('change', async (event) => {
+      const sortBy = (event.target as HTMLSelectElement).value;
+
+      try {
+        loadingIndicator?.classList.remove('hidden');
+        container.classList.add('opacity-50', 'pointer-events-none');
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const { data, error } = await actions.getSortedServices({
+          sortBy: sortBy as any
+        });
+
+        if (error || !data) {
+          console.error('Failed to sort services');
+          loadingIndicator?.classList.add('hidden');
+          container.classList.remove('opacity-50', 'pointer-events-none');
+          return;
+        }
+
+        container.classList.add('animate-fade-out');
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const mostPopularService = data.reduce((prev: any, current: any) =>
+          prev.rateCount > current.rateCount ? prev : current
+        );
+
+        renderServices(data, mostPopularService.id);
+        container.classList.remove('animate-fade-out', 'opacity-50', 'pointer-events-none');
+        void container.offsetWidth;
+
+      } catch (error) {
+        console.error('Sort error:', error);
+      } finally {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        loadingIndicator?.classList.add('hidden');
+      }
+    });
+  }
+
+  // Initialize
+  init();
+</script>
+
+<style is:global>
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  #services-list > div {
+    opacity: 0;
+  }
+</style>

@@ -1,0 +1,197 @@
+---
+// src/components/Cart.astro
+import { formatCurrency } from '../utils/format';
+
+interface Props {
+  isOpen?: boolean;
+}
+
+const { isOpen = false } = Astro.props;
+---
+
+<div
+  id="cart-modal"
+  class={`fixed inset-0 z-50 transition-all duration-300 ${
+    isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+  }`}
+>
+  {/* Backdrop */}
+  <div
+    id="cart-backdrop"
+    class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+    onclick="document.getElementById('cart-modal').classList.add('hidden')"
+  />
+
+  {/* Cart Sidebar */}
+  <div
+    class={`absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white shadow-2xl transition-transform duration-300 overflow-y-auto ${
+      isOpen ? 'translate-x-0' : 'translate-x-full'
+    }`}
+  >
+    <div class="sticky top-0 bg-white border-b border-neutral-200 p-6 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-neutral-900">Keranjang</h2>
+      <button
+        id="close-cart"
+        class="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+        aria-label="Close cart"
+      >
+        <div class="i-tabler-x text-2xl text-neutral-600" />
+      </button>
+    </div>
+
+    {/* Cart Items */}
+    <div id="cart-items" class="p-6 space-y-4">
+      {/* Items akan di-inject oleh JavaScript */}
+    </div>
+
+    {/* Cart Summary */}
+    <div class="sticky bottom-0 bg-white border-t border-neutral-200 p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <span class="text-neutral-600">Subtotal:</span>
+        <span id="subtotal" class="font-semibold text-neutral-900">Rp 0</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-neutral-600">Tax (10%):</span>
+        <span id="tax" class="font-semibold text-neutral-900">Rp 0</span>
+      </div>
+      <div class="border-t border-neutral-200 pt-4 flex justify-between items-center">
+        <span class="text-lg font-bold text-neutral-900">Total:</span>
+        <span id="total" class="text-lg font-bold text-yellow-600">Rp 0</span>
+      </div>
+      <button
+        id="checkout-btn"
+        class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-neutral-900 font-bold py-3 rounded-xl transition-all duration-300 active:scale-95 shadow-lg"
+      >
+        Checkout
+      </button>
+      <button
+        id="continue-shopping"
+        class="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold py-3 rounded-xl transition-colors"
+      >
+        Lanjut Belanja
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { cartManager } from '../services/cartService';
+
+  declare global {
+    interface Window {
+      cartManager: typeof cartManager;
+    }
+  }
+
+  const cartModal = document.getElementById('cart-modal');
+  const closeCartBtn = document.getElementById('close-cart');
+  const continueShoppingBtn = document.getElementById('continue-shopping');
+  const cartItemsContainer = document.getElementById('cart-items');
+
+  // Close cart
+  closeCartBtn?.addEventListener('click', () => {
+    cartModal?.classList.add('hidden');
+  });
+
+  continueShoppingBtn?.addEventListener('click', () => {
+    cartModal?.classList.add('hidden');
+  });
+
+  // Render cart items
+  function renderCart() {
+    const cart = cartManager.getCart();
+
+    if (cart.items.length === 0) {
+      cartItemsContainer!.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12">
+          <div class="i-tabler-shopping-bag text-5xl text-neutral-300 mb-4"></div>
+          <p class="text-neutral-500 text-center">Keranjang Anda kosong</p>
+        </div>
+      `;
+      return;
+    }
+
+    cartItemsContainer!.innerHTML = cart.items
+      .map(
+        (item) => `
+          <div class="flex gap-4 p-4 bg-neutral-50 rounded-xl border border-neutral-200 hover:border-yellow-300 transition-colors">
+            <img
+              src="${item.img}"
+              alt="${item.name}"
+              class="w-20 h-20 object-cover rounded-lg"
+            />
+            <div class="flex-1">
+              <h3 class="font-semibold text-neutral-900 text-sm">${item.name}</h3>
+              <p class="text-xs text-neutral-500 mt-1">${item.description}</p>
+              <div class="mt-2 flex items-center gap-2">
+                <button
+                  class="px-2 py-1 bg-neutral-200 hover:bg-neutral-300 rounded text-xs font-semibold"
+                  onclick="window.cartManager.updateQuantity(${item.id}, ${item.quantity - 1}); location.reload()"
+                >
+                  -
+                </button>
+                <span class="text-sm font-semibold">${item.quantity}</span>
+                <button
+                  class="px-2 py-1 bg-neutral-200 hover:bg-neutral-300 rounded text-xs font-semibold"
+                  onclick="window.cartManager.updateQuantity(${item.id}, ${item.quantity + 1}); location.reload()"
+                >
+                  +
+                </button>
+                <span class="text-xs text-neutral-500 ml-auto">${item.duration}h</span>
+              </div>
+              <p class="text-sm font-bold text-yellow-600 mt-2">
+                ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price * item.quantity * item.duration)}
+              </p>
+            </div>
+            <button
+              class="text-neutral-400 hover:text-red-500 transition-colors"
+              onclick="window.cartManager.removeFromCart(${item.id}); location.reload()"
+              aria-label="Remove item"
+            >
+              <div class="i-tabler-trash text-xl"></div>
+            </button>
+          </div>
+        `
+      )
+      .join('');
+
+    // Update totals
+    const taxRate = 0.1;
+    const tax = Math.round(cart.totalPrice * taxRate);
+    const total = cart.totalPrice + tax;
+
+    document.getElementById('subtotal')!.textContent = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(cart.totalPrice);
+
+    document.getElementById('tax')!.textContent = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(tax);
+
+    document.getElementById('total')!.textContent = new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(total);
+  }
+
+  // Initial render
+  renderCart();
+
+  // Make cartManager global untuk onclick handlers
+  (window as any).cartManager = (window as any).cartManager || { ...cartManager };
+</script>
+
+<style>
+  #cart-modal {
+    display: flex;
+  }
+
+  #cart-modal.hidden {
+    display: none;
+  }
+</style>
