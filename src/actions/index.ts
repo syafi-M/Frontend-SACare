@@ -4,6 +4,9 @@ import { z } from 'astro:content';
 import { serviceApi } from '../services/serviceApi';
 import type { SortType } from '../types/service';
 
+const API_MODE = import.meta.env.PUBLIC_API_MODE;
+const LARAVEL_URL = import.meta.env.PUBLIC_LARAVEL_URL;
+
 export const server = {
   loginWithGoogle: defineAction({
     input: z.object({}).optional(),
@@ -33,13 +36,31 @@ export const server = {
     input: z.object({
       sortBy: z.enum(['popular', 'rating', 'price-low-high', 'price-high-low']),
     }),
-    handler: async ({ sortBy }) => {
-      try {
-        return await serviceApi.getAllServices(sortBy as SortType);
-      } catch (error) {
-        console.error('Error getting sorted services:', error);
-        return await serviceApi.getAllServices('popular');
+    handler: async (input, context) => {
+      // LOGIKA SWITCHER
+      if (API_MODE === 'production') {
+        try {
+          const response = await fetch(`${LARAVEL_URL}/services?sort=${input.sortBy}`, {
+            headers: {
+              // Ambil token dari cookie jika sudah login
+              'Authorization': `Bearer ${context.cookies.get('auth_token')?.value}`,
+              'Accept': 'application/json'
+            }
+          });
+          return await response.json();
+        } catch (e) {
+          throw new Error("Gagal menyambung ke Laravel API");
+        }
       }
+
+      // LOGIKA DUMMY (Dijalankan jika mode = dummy)
+      console.log("Running in Dummy Mode...");
+      const dummyServices = [
+        { id: 1, name: 'Cleaning Service', price: 150000, rate: 4.8 },
+        { id: 2, name: 'AC Service', price: 200000, rate: 4.5 },
+      ];
+      // ... logika sorting dummy kamu ...
+      return dummyServices;
     }
   }),
 

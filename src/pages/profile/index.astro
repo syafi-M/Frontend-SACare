@@ -1,0 +1,113 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { cartManager } from '../../services/cartService';
+
+// Ambil data user dari middleware
+const user = Astro.locals.user || {
+  name: "Tamu",
+  email: "guest@sacare.com",
+  avatar: null
+};
+
+// Hitung ringkasan (dummy/local)
+const orderCount = 0; // Nanti bisa diambil dari cartManager.getOrderHistory().length
+---
+
+<Layout title="Profil Saya">
+  <div class="px-4 md:m-5 mt-8 max-w-2xl mx-auto pb-32">
+    <div class="flex flex-col items-center mb-10">
+      <div class="relative group">
+        <div class="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-yellow-400 flex items-center justify-center text-4xl font-bold text-neutral-800 shadow-xl overflow-hidden border-4 border-white">
+          {user.avatar ? <img src={user.avatar} alt={user.name} /> : user.name.charAt(0)}
+        </div>
+        <button class="absolute bottom-1 right-1 p-2 bg-white rounded-xl shadow-md border border-neutral-100 hover:bg-neutral-50 transition-colors">
+          <div class="i-tabler-camera text-neutral-600"></div>
+        </button>
+      </div>
+      
+      <h1 class="text-2xl font-bold text-neutral-900 mt-4">{user.name}</h1>
+      <p class="text-neutral-500 text-sm">{user.email}</p>
+      
+      <div class="flex gap-2 mt-4">
+        <span class="px-3 py-1 bg-neutral-100 rounded-full text-[10px] font-bold uppercase tracking-wider text-neutral-600 border border-neutral-200">
+          Member Gold
+        </span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-8">
+      <div class="bg-white p-4 rounded-2xl border border-neutral-200 text-center shadow-sm">
+        <p id="order-count" class="text-xl font-bold text-neutral-900">0</p>
+        <p class="text-[10px] text-neutral-500 uppercase font-bold">Total Pesanan</p>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-neutral-200 text-center shadow-sm">
+        <p class="text-xl font-bold text-neutral-900">0</p>
+        <p class="text-[10px] text-neutral-500 uppercase font-bold">Poin Reward</p>
+      </div>
+    </div>
+
+    <div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm">
+      <div class="divide-y divide-neutral-100">
+        <a href="/orders/history" class="flex items-center justify-between p-4 hover:bg-neutral-50 transition-colors group">
+          <div class="flex items-center gap-4">
+            <div class="p-2 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-100 transition-colors">
+              <div class="i-tabler-clipboard-list text-xl"></div>
+            </div>
+            <span class="font-semibold text-neutral-800">Riwayat Pesanan</span>
+          </div>
+          <div class="i-tabler-chevron-right text-neutral-400"></div>
+        </a>
+
+        <a href="#" class="flex items-center justify-between p-4 hover:bg-neutral-50 transition-colors group">
+          <div class="flex items-center gap-4">
+            <div class="p-2 bg-yellow-50 text-yellow-600 rounded-xl group-hover:bg-yellow-100 transition-colors">
+              <div class="i-tabler-map-pin text-xl"></div>
+            </div>
+            <span class="font-semibold text-neutral-800">Alamat Tersimpan</span>
+          </div>
+          <div class="i-tabler-chevron-right text-neutral-400"></div>
+        </a>
+
+        <a href="#" class="flex items-center justify-between p-4 hover:bg-neutral-50 transition-colors group">
+          <div class="flex items-center gap-4">
+            <div class="p-2 bg-purple-50 text-purple-600 rounded-xl group-hover:bg-purple-100 transition-colors">
+              <div class="i-tabler-credit-card text-xl"></div>
+            </div>
+            <span class="font-semibold text-neutral-800">Metode Pembayaran</span>
+          </div>
+          <div class="i-tabler-chevron-right text-neutral-400"></div>
+        </a>
+
+        <a href="#" class="flex items-center justify-between p-4 hover:bg-neutral-50 transition-colors group text-red-600">
+          <div class="flex items-center gap-4">
+            <div class="p-2 bg-red-50 rounded-xl group-hover:bg-red-100 transition-colors">
+              <div class="i-tabler-logout text-xl"></div>
+            </div>
+            <span class="font-semibold">Keluar Akun</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { cartManager } from '../../services/cartService';
+  import { actions } from 'astro:actions';
+  
+  // Update statistik secara client-side
+  const orderCountEl = document.getElementById('order-count');
+  if (orderCountEl) {
+    const history = cartManager.getOrderHistory();
+    orderCountEl.textContent = history.length.toString();
+  }
+//   logout func
+  const logoutBtn = document.querySelector('.text-red-600');
+  logoutBtn?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if(confirm('Apakah Anda yakin ingin keluar?')) {
+      await actions.logout();
+      window.location.href = '/';
+    }
+  });
+</script>

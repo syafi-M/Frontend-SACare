@@ -1,28 +1,162 @@
 ---
+import { cartManager } from "../services/cartService";
+
 // Import icons jika menggunakan preset-icons
 // Pastikan paket @iconify-json/tabler dan @iconify-json/lucide terinstal
 ---
 
-<nav class="flex items-center justify-between h-16 px-4 bg-white">
-  
-  <!-- Left Side: Menu Icon and Logo -->
-  <div class="flex items-center space-x-4">
-    <!-- Search Bar Placeholder -->
-    <div class="relative">
-        <input type="text" placeholder="Search for home services" class="w-full p-3 pl-10 rounded-lg focus:outline-none bg-white">
-        <div class="i-tabler-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></div>
-    </div>
-    </div>
-  <!-- Right Side: Notification Icon -->
-  <div>
-    <a href="/cart" class="relative text-gray-600 hover:text-gray-800 focus:outline-none">
-      <!-- Ikon Notifikasi -->
-      <div class="i-tabler-shopping-cart text-2xl"></div>
+<nav class="flex items-center justify-between h-16 px-4 bg-white border-b border-neutral-100 static top-0 z-50">
+  <div class="flex items-center flex-1 mr-4">
+    <div class="relative w-full max-w-md">
+      <input 
+        id="global-search"
+        type="text" 
+        placeholder="Cari layanan (misal: AC, Cuci)" 
+        class="w-full p-2.5 pl-10 rounded-xl focus:outline-none bg-neutral-100 border border-transparent focus:border-yellow-400 focus:bg-white transition-all text-sm"
+      >
+      <div class="i-tabler-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></div>
 
-      <!-- Badge Notifikasi (Angka 2) -->
-      <span class="absolute top-0 right-0 inline-flex items-center justify-center text-center min-w-5 min-h-5 text-xs font-semibold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">
-        2
+      <div 
+        id="search-results" 
+        class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden z-[60] max-h-96 overflow-y-auto"
+      >
+        <div id="search-list" class="divide-y divide-neutral-50">
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <a href="/cart" class="relative text-gray-600 hover:text-gray-800 focus:outline-none p-2 block">
+      <div class="i-tabler-shopping-cart text-2xl"></div>
+      <span id="cart-badge" class="absolute hidden top-1 right-1 inline-flex items-center justify-center text-center min-w-5 min-h-5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full border-2 border-white">
+        0
       </span>
     </a>
   </div>
 </nav>
+
+<style is:global>
+  @keyframes searchReveal {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes searchHide {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.98);
+    }
+  }
+
+  .animate-search-in {
+    animation: searchReveal 0.2s ease-out forwards;
+  }
+
+  .animate-search-out {
+    animation: searchHide 0.15s ease-in forwards;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  import { cartManager } from '../services/cartService';
+  import { serviceApi } from '../services/serviceApi';
+
+  const searchInput = document.getElementById('global-search') as HTMLInputElement;
+  const searchResults = document.getElementById('search-results');
+  const searchList = document.getElementById('search-list');
+
+  function showResults() {
+    searchResults.classList.remove('hidden', 'animate-search-out');
+    searchResults.classList.add('animate-search-in');
+  }
+
+  function hideResults() {
+    searchResults.classList.add('animate-search-out');
+    searchResults.classList.remove('animate-search-in');
+    
+    // Tunggu animasi selesai (150ms) baru sembunyikan total
+    setTimeout(() => {
+      if (searchResults.classList.contains('animate-search-out')) {
+        searchResults.classList.add('hidden');
+      }
+    }, 150);
+  }
+
+  // Logic Search
+  searchInput?.addEventListener('input', async (e) => {
+    const query = e.target.value.toLowerCase();
+    
+    if (query.length < 2) {
+      hideResults();
+      return;
+    }
+
+    // Logic filter (sama seperti kode sebelumnya)
+    const allServices = await serviceApi.getAllServices();
+    const filtered = allServices.filter(s => 
+      s.name.toLowerCase().includes(query) || 
+      s.category.toLowerCase().includes(query)
+    );
+
+    if (filtered.length > 0) {
+      renderSearchItems(filtered);
+      showResults();
+    } else {
+      searchList.innerHTML = `<div class="p-4 text-center text-xs text-neutral-400 italic">Layanan tidak ditemukan</div>`;
+      showResults();
+    }
+  });
+
+  // Tutup dropdown jika klik di luar
+  document.addEventListener('click', (e) => {
+    if (!searchInput?.contains(e.target as Node) && !searchResults?.contains(e.target as Node)) {
+      searchResults?.classList.add('hidden');
+    }
+  });
+
+  function renderSearchItems(items) {
+    searchList.innerHTML = items.map((service, index) => `
+      <a 
+        href="/layanan?id=${service.id}" 
+        class="flex items-center gap-3 p-3 hover:bg-neutral-50 transition-all group border-l-2 border-transparent hover:border-yellow-400"
+        style="animation: searchReveal 0.3s ease-out ${index * 0.05}s forwards; opacity: 0;"
+      >
+        <img src="${service.img}" class="w-10 h-10 rounded-lg object-cover" />
+        <div class="flex-1">
+          <p class="text-sm font-bold text-neutral-800">${service.name}</p>
+          <p class="text-[10px] text-neutral-500 uppercase">${service.category}</p>
+        </div>
+        <p class="text-xs font-bold text-neutral-900">Rp ${service.price / 1000}k</p>
+      </a>
+    `).join('');
+  }
+
+  // Logic Badge (Sama seperti sebelumnya)
+  function updateBadge() {
+    const badge = document.querySelector('#cart-badge');
+    const total = cartManager.getTotalItems();
+    if (badge) {
+      if (total > 0) {
+        badge.textContent = total.toString();
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+  }
+
+  updateBadge();
+  window.addEventListener('cart-updated', updateBadge);
+</script>

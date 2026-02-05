@@ -4,6 +4,7 @@ export interface Service {
   name: string;
   description: string;
   img: string;
+  category: string;
   price: number;
   rate: number;
   rateCount: number;

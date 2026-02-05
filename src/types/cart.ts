@@ -2,8 +2,7 @@
 import type { Service } from './service';
 
 export interface CartItem extends Service {
-  quantity: number;
-  duration: number; // dalam jam
+  size: number;
   addedAt: number; // timestamp
 }
 

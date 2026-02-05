@@ -20,7 +20,7 @@ const navItems = [
     },
     {
         name: "Pesanan",
-        href: "/orders",
+        href: "/orders/history",
         icon: "i-tabler-clipboard-list",
         activeIcon: "i-tabler-clipboard-list-filled",
     },
@@ -45,7 +45,7 @@ const navItems = [
                     <>
                         {/* Booking Button di tengah */}
                         {index === 2 && (
-                            <div class="relative flex flex-col items-center justify-center -translate-y-6">
+                            <a href="/cart" class="relative flex flex-col items-center justify-center -translate-y-6">
                                 <div class="relative group">
                                     <button
                                         class="relative bg-gradient-to-br from-yellow-300 to-yellow-500 hover:from-yellow-400 hover:to-yellow-600 text-neutral-900 w-16 h-16 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-yellow-300/50 flex items-center justify-center overflow-hidden font-bold"
@@ -65,7 +65,7 @@ const navItems = [
                                 <span class="text-[7px] font-bold mt-2.5 text-neutral-700 uppercase tracking-wider">
                                     Booking
                                 </span>
-                            </div>
+                            </a>
                         )}
 
                         {/* Navigation Items */}

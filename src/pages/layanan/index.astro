@@ -6,21 +6,30 @@ import ServiceCard from '../../components/ServiceCard.astro';
 import { serviceApi } from '../../services/serviceApi';
 import { SORT_OPTIONS } from '../../types/service';
 
-const initialServices = await serviceApi.getAllServices('popular');
+// 1. Ambil kategori dari URL Search Params
+const category = Astro.url.searchParams.get('category');
 
-// Find most popular service
-const mostPopularId = initialServices.reduce((prev, current) =>
-  prev.rateCount > current.rateCount ? prev : current
-).id;
+// 2. Ambil data yang sudah difilter sejak awal
+const initialServices = await serviceApi.getAllServices('popular', category);
+
+// Pastikan handle jika hasil filter kosong
+const mostPopularId = initialServices.length > 0 
+  ? initialServices.reduce((prev, current) => prev.rateCount > current.rateCount ? prev : current).id
+  : null;
 ---
 
 <Layout title="Home Service">
   <div class="m-5 mt-8 pb-32">
     <div class="mb-8" style="animation: fadeIn 0.4s ease-out forwards;">
       <p class="font-semibold uppercase text-neutral-500/70 text-sm tracking-wide">
-        Services • Jakarta
+        Services • Jakarta {category && `• ${category}`}
       </p>
       <h1 class="text-4xl font-bold text-neutral-800 mt-2">Browse Services</h1>
+      {category && (
+        <a href="/layanan" class="text-xs text-blue-600 font-bold hover:underline mt-2 inline-block">
+          ← Reset Filter
+        </a>
+      )}
     </div>
 
     <Select
@@ -288,6 +297,8 @@ const mostPopularId = initialServices.reduce((prev, current) =>
   const container = document.querySelector('#services-list') as HTMLElement;
   const loadingIndicator = document.querySelector('#loading-indicator') as HTMLElement;
   const serviceModal = document.getElementById('service-modal');
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentCategory = urlParams.get('category')
 
   let currentServiceId: number | null = null;
 
@@ -363,13 +374,29 @@ const mostPopularId = initialServices.reduce((prev, current) =>
 
   // Initial render
   async function init() {
-    const initial = await serviceApi.getAllServices('popular');
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryFromUrl = urlParams.get('category');
+    const idFromUrl = urlParams.get('id'); // Ambil ID dari URL
+
+    const initial = await serviceApi.getAllServices('popular', currentCategory);
     servicesCache = initial;
 
     // Render initial services
-    renderServices(initial, initial.reduce((prev: any, current: any) =>
-      prev.rateCount > current.rateCount ? prev : current
-    ).id);
+    if (initial.length > 0) {
+      renderServices(initial, initial.reduce((prev: any, current: any) =>
+        prev.rateCount > current.rateCount ? prev : current
+      ).id);
+      // 3. AUTO-OPEN MODAL jika ada ID di URL
+        if (idFromUrl) {
+            const serviceId = parseInt(idFromUrl);
+            // Beri sedikit delay agar render selesai dulu
+            setTimeout(() => {
+                window.openServiceModal(serviceId);
+            }, 100);
+        }
+    } else {
+      container!.innerHTML = `<div class="col-span-full text-center py-20 text-neutral-500">Tidak ada layanan ditemukan untuk kategori ini.</div>`;
+    }
   }
 
   function renderServices(services: any[], mostPopularId: number) {
@@ -448,7 +475,8 @@ const mostPopularId = initialServices.reduce((prev, current) =>
         await new Promise(resolve => setTimeout(resolve, 300));
 
         const { data, error } = await actions.getSortedServices({
-          sortBy: sortBy as any
+          sortBy: sortBy as any,
+          category: currentCategory
         });
 
         if (error || !data) {

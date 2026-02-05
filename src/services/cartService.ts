@@ -3,8 +3,29 @@ import type { CartItem, Cart } from '../types/cart';
 import { CART_STORAGE_KEY } from '../types/cart';
 import type { Service } from '../types/service';
 
+export type OrderStatus = 'Pending' | 'On Progress' | 'Completed' | 'Cancelled';
+
+export interface Order {
+  id: string;
+  date: number;
+  items: CartItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  status: OrderStatus;
+}
+
 class CartManager {
   private storageKey = CART_STORAGE_KEY;
+
+  /**
+   * Helper untuk trigger event agar UI tahu ada perubahan
+   */
+  private dispatchCartUpdate() {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('cart-updated'));
+    }
+  }
 
   /**
    * Get cart dari localStorage
@@ -21,6 +42,7 @@ class CartManager {
       }
 
       const cart = JSON.parse(stored);
+      // Pastikan kita selalu menghitung ulang total saat load untuk akurasi
       return this.calculateTotals(cart);
     } catch (error) {
       console.error('Error loading cart:', error);
@@ -31,22 +53,17 @@ class CartManager {
   /**
    * Add item ke cart
    */
-  addToCart(service: Service, quantity: number = 1, duration: number = 1): CartItem {
+  addToCart(service: Service, size: number = 1, duration: number = 1): CartItem {
     const cart = this.getCart();
-
-    // Check if item already exists
     const existingIndex = cart.items.findIndex(item => item.id === service.id);
 
     if (existingIndex > -1) {
-      // Update quantity dan duration
-      cart.items[existingIndex].quantity += quantity;
-      cart.items[existingIndex].duration += duration;
+      cart.items[existingIndex].size += size;
+      // Opsional: duration biasanya tidak ditambah, tapi diupdate. 
     } else {
-      // Add new item
       const cartItem: CartItem = {
         ...service,
-        quantity,
-        duration,
+        size,
         addedAt: Date.now(),
       };
       cart.items.push(cartItem);
@@ -66,17 +83,17 @@ class CartManager {
   }
 
   /**
-   * Update quantity
+   * Update size
    */
-  updateQuantity(serviceId: number, quantity: number): void {
+  updateSize(serviceId: number, size: number): void {
     const cart = this.getCart();
     const item = cart.items.find(item => item.id === serviceId);
 
     if (item) {
-      if (quantity <= 0) {
+      if (size <= 0) {
         this.removeFromCart(serviceId);
       } else {
-        item.quantity = quantity;
+        item.size = size;
         this.saveCart(cart);
       }
     }
@@ -93,7 +110,6 @@ class CartManager {
       if (duration <= 0) {
         this.removeFromCart(serviceId);
       } else {
-        item.duration = duration;
         this.saveCart(cart);
       }
     }
@@ -112,14 +128,16 @@ class CartManager {
    * Calculate totals
    */
   private calculateTotals(cart: Cart): Cart {
-    const totalItems = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    // FIX: Gunakan .reduce dengan benar
+    const totalItems = cart.items.reduce((sum, item) => sum + item.size, 0);
     const totalPrice = cart.items.reduce(
-      (sum, item) => sum + (item.price * item.quantity * item.duration),
+      (sum, item) => sum + (item.price * item.size),
       0
     );
 
     return {
       ...cart,
+      items: cart.items,
       totalItems,
       totalPrice,
     };
@@ -133,10 +151,51 @@ class CartManager {
       const calculated = this.calculateTotals(cart);
       if (typeof window !== 'undefined') {
         localStorage.setItem(this.storageKey, JSON.stringify(calculated));
+        // TRIGGER EVENT!
+        this.dispatchCartUpdate();
       }
     } catch (error) {
       console.error('Error saving cart:', error);
     }
+  }
+
+    /**
+     * Get total items in cart
+     */
+  getTotalItems(): number {
+    const cart = this.getCart();
+    return cart.totalItems || 0;
+  }
+
+  checkout(): Order | null {
+    const cart = this.getCart();
+    if (cart.items.length === 0) return null;
+
+    const tax = Math.round(cart.totalPrice * 0.1);
+    const order: Order = {
+      id: `SAC-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+      date: Date.now(),
+      items: [...cart.items],
+      subtotal: cart.totalPrice,
+      tax: tax,
+      total: cart.totalPrice + tax,
+      status: 'Completed'
+    };
+
+    // Simpan ke History (Mock Database)
+    const history = JSON.parse(localStorage.getItem('order_history') || '[]');
+    localStorage.setItem('order_history', JSON.stringify([order, ...history]));
+
+    // Kosongkan keranjang
+    this.clearCart();
+    this.dispatchCartUpdate();
+    
+    return order;
+  }
+
+  getOrderHistory(): Order[] {
+    if (typeof window === 'undefined') return [];
+    return JSON.parse(localStorage.getItem('order_history') || '[]');
   }
 }
 

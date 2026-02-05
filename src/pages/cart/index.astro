@@ -54,10 +54,6 @@ import { formatCurrency } from '../../utils/format';
                 <span class="text-neutral-600">PPN (10%)</span>
                 <span id="summary-tax" class="font-semibold text-neutral-900">Rp 0</span>
               </div>
-              <div class="flex justify-between items-center">
-                <span class="text-neutral-600">Ongkir</span>
-                <span class="font-semibold text-neutral-900">Gratis</span>
-              </div>
             </div>
 
             <div class="flex justify-between items-center mb-6">
@@ -84,7 +80,7 @@ import { formatCurrency } from '../../utils/format';
           </div>
 
           <!-- Promo Code Card -->
-          <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
+          <!-- <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
             <h3 class="font-semibold text-blue-900 mb-3">Punya kode promo?</h3>
             <div class="flex flex-col md:flex-row gap-2">
               <input
@@ -96,7 +92,7 @@ import { formatCurrency } from '../../utils/format';
                 Terapkan
               </button>
             </div>
-          </div>
+          </div> -->
 
           <!-- Info Card -->
           <div class="bg-neutral-50 rounded-2xl p-6 border border-neutral-200 space-y-3">
@@ -151,8 +147,7 @@ import { formatCurrency } from '../../utils/format';
   declare global {
     interface Window {
       removeFromCart: (serviceId: number) => void;
-      updateQuantity: (serviceId: number, quantity: number) => void;
-      updateDuration: (serviceId: number, duration: number) => void;
+      updateSize: (serviceId: number, size: number) => void;
     }
   }
 
@@ -190,13 +185,13 @@ import { formatCurrency } from '../../utils/format';
       .map(
         (item, index) => `
           <div class="cart-item bg-white rounded-2xl border border-neutral-200 p-6 hover:shadow-lg transition-shadow" style="animation-delay: ${index * 100}ms">
-            <div class="flex gap-4">
+            <div class="flex flex-col md:flex-row gap-4">
               <!-- Image -->
               <div class="flex-shrink-0">
                 <img
                   src="${item.img}"
                   alt="${item.name}"
-                  class="w-24 h-24 object-cover rounded-xl"
+                  class="w-full h-24 object-cover rounded-xl"
                 />
               </div>
 
@@ -217,38 +212,19 @@ import { formatCurrency } from '../../utils/format';
                 </div>
 
                 <!-- Stats -->
-                <div class="flex gap-4 mt-4">
+                <div class="flex flex-col md:flex-row items-end gap-4 mt-4">
                   <div class="flex items-center gap-2">
-                    <span class="text-neutral-600 text-sm">Quantity:</span>
+                    <span class="text-neutral-600 text-sm">Luas:</span>
                     <div class="flex items-center gap-2 bg-neutral-100 rounded-lg p-1">
                       <button
-                        onclick="window.updateQuantity(${item.id}, ${item.quantity - 1})"
+                        onclick="window.updateSize(${item.id}, ${item.size - 1})"
                         class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
                       >
                         <div class="i-tabler-minus text-lg"></div>
                       </button>
-                      <span class="w-8 text-center font-semibold text-neutral-900">${item.quantity}</span>
+                      <span class="w-12 text-center font-semibold text-neutral-900">${item.size} m<sup>2</sup></span>
                       <button
-                        onclick="window.updateQuantity(${item.id}, ${item.quantity + 1})"
-                        class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
-                      >
-                        <div class="i-tabler-plus text-lg"></div>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-2">
-                    <span class="text-neutral-600 text-sm">Duration:</span>
-                    <div class="flex items-center gap-2 bg-neutral-100 rounded-lg p-1">
-                      <button
-                        onclick="window.updateDuration(${item.id}, ${item.duration - 1})"
-                        class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
-                      >
-                        <div class="i-tabler-minus text-lg"></div>
-                      </button>
-                      <span class="w-8 text-center font-semibold text-neutral-900">${item.duration}h</span>
-                      <button
-                        onclick="window.updateDuration(${item.id}, ${item.duration + 1})"
+                        onclick="window.updateSize(${item.id}, ${item.size + 1})"
                         class="p-1 hover:bg-neutral-200 rounded text-neutral-600 transition-colors"
                       >
                         <div class="i-tabler-plus text-lg"></div>
@@ -266,7 +242,7 @@ import { formatCurrency } from '../../utils/format';
                 <!-- Total -->
                 <div class="mt-2 flex justify-between items-center">
                   <span class="font-bold text-neutral-900">Total:</span>
-                  <span class="text-xl font-bold text-yellow-600">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price * item.quantity * item.duration)}</span>
+                  <span class="text-xl font-bold text-yellow-600">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price * item.size)}</span>
                 </div>
               </div>
             </div>
@@ -308,16 +284,9 @@ import { formatCurrency } from '../../utils/format';
     renderCart();
   };
 
-  window.updateQuantity = (serviceId: number, quantity: number) => {
-    if (quantity > 0) {
-      cartManager.updateQuantity(serviceId, quantity);
-      renderCart();
-    }
-  };
-
-  window.updateDuration = (serviceId: number, duration: number) => {
-    if (duration > 0) {
-      cartManager.updateDuration(serviceId, duration);
+  window.updateSize = (serviceId: number, size: number) => {
+    if (size > 0) {
+      cartManager.updateSize(serviceId, size);
       renderCart();
     }
   };
@@ -328,8 +297,12 @@ import { formatCurrency } from '../../utils/format';
   });
 
   checkoutBtn?.addEventListener('click', () => {
-    // TODO: Implement checkout logic
-    alert('Checkout functionality coming soon!');
+    const order = cartManager.checkout();
+    if (order) {
+      // Tampilkan animasi sukses atau langsung ke history
+      alert(`Pesanan Berhasil! ID: ${order.id}`);
+      window.location.href = '/orders/history'; 
+    }
   });
 
   // Initial render

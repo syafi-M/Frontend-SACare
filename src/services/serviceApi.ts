@@ -8,6 +8,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'Cleaning Service',
     description: 'Layanan pembersihan rumah profesional dan menyeluruh',
     img: 'https://placehold.co/600x300',
+    category: 'Cleaning',
     price: 150000,
     rate: 4.8,
     rateCount: 120
@@ -17,6 +18,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'AC Service & Cleaning',
     description: 'Pembersihan, servis, dan perawatan AC berkala',
     img: 'https://placehold.co/600x300',
+    category: 'Cleaning',
     price: 200000,
     rate: 4.5,
     rateCount: 95
@@ -26,6 +28,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'Laundry Service',
     description: 'Layanan cuci dan setrika pakaian profesional',
     img: 'https://placehold.co/600x300',
+    category: 'Laundry',
     price: 100000,
     rate: 4.7,
     rateCount: 150
@@ -35,6 +38,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'Furniture Cleaning',
     description: 'Pembersihan dan perawatan mebel dan sofa',
     img: 'https://placehold.co/600x300',
+    category: 'Cleaning',
     price: 250000,
     rate: 4.6,
     rateCount: 80
@@ -44,6 +48,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'Carpet & Rug Cleaning',
     description: 'Pembersihan karpet dan permadani dengan steam cleaning',
     img: 'https://placehold.co/600x300',
+    category: 'Cleaning',
     price: 300000,
     rate: 4.5,
     rateCount: 60
@@ -53,6 +58,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'Window & Glass Cleaning',
     description: 'Pembersihan kaca jendela dan cermin profesional',
     img: 'https://placehold.co/600x300',
+    category: 'Cleaning',
     price: 100000,
     rate: 4.7,
     rateCount: 70
@@ -62,6 +68,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'Pest Control',
     description: 'Layanan pengendalian hama dan serangga',
     img: 'https://placehold.co/600x300',
+    category: 'Cleaning',
     price: 350000,
     rate: 4.8,
     rateCount: 90
@@ -71,6 +78,7 @@ const DUMMY_SERVICES: Service[] = [
     name: 'Plumbing Service',
     description: 'Perbaikan dan perawatan sistem pipa air',
     img: 'https://placehold.co/600x300',
+    category: 'Plumbing',
     price: 200000,
     rate: 4.6,
     rateCount: 50
@@ -94,15 +102,18 @@ class ServiceApiClient {
    * Fetch semua services dengan optional sorting
    * DUMMY: Return dummy data
    */
-  async getAllServices(sortBy?: SortType): Promise<Service[]> {
+  async getAllServices(sortBy?: SortType, category?: string): Promise<Service[]> {
     try {
-      // TODO: Uncomment ini ketika API siap
-      // const response = await fetch(`${this.baseUrl}/services?sort=${sortBy || 'popular'}`);
-      // if (!response.ok) throw new Error('Failed to fetch services');
-      // return response.json();
+      let services = [...DUMMY_SERVICES];
+      
+      // Tambahkan Logika Filter Kategori
+      if (category) {
+        services = services.filter(s => 
+          s.category.toLowerCase() === category.toLowerCase()
+        );
+      }
 
-      // DUMMY: Return dummy data dengan sorting
-      return this.sortServices(DUMMY_SERVICES, sortBy || 'popular');
+      return this.sortServices(services, sortBy || 'popular');
     } catch (error) {
       console.error('Error fetching services:', error);
       return DUMMY_SERVICES;
