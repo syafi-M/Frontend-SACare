@@ -1,0 +1,32 @@
+---
+// src/components/ServiceGrid.astro
+import { serviceApi } from '../services/serviceApi';
+import ServiceCard from './ServiceCard.astro';
+
+const { category } = Astro.props;
+const initialServices = await serviceApi.getAllServices('popular', category);
+
+const mostPopularId = initialServices.length > 0 
+  ? initialServices.reduce((p, c) => p.rateCount > c.rateCount ? p : c).id
+  : null;
+---
+
+{initialServices.map((service, index) => (
+  <div
+    style={`animation: fadeIn 0.4s ease-out ${100 + index * 50}ms forwards; opacity: 0;`}
+    onclick={`window.openServiceModal(${service.id})`}
+    class="cursor-pointer h-full"
+  >
+    <ServiceCard 
+      service={service} 
+      isPopular={service.id === mostPopularId} 
+    />
+  </div>
+))}
+
+<script is:inline define:vars={{ initialServices }}>
+  // Kirim data server ke global window agar Client-side Script bisa akses
+  window.servicesCache = initialServices;
+  // Beri tahu index.astro bahwa data sudah siap di memori
+  window.dispatchEvent(new CustomEvent('services-ready'));
+</script>

@@ -1,59 +1,56 @@
 ---
-// src/pages/index.astro
+// src/pages/homepage.astro
+import PopularChoiceList from "../components/PopularChoiceList.astro";
 import Layout from "../layouts/Layout.astro";
-import { serviceApi } from "../services/serviceApi";
-
-// Ambil semua service dan urutkan berdasarkan 'popular'
-const allServices = await serviceApi.getAllServices('popular');
-
-// Ambil 3 layanan teratas dengan rating & rateCount terbaik
-const popularChoices = allServices.slice(0, 3);
 
 // Data dummy untuk mempermudah maintenance
 const services = [
-    { name: 'Cleaning', icon: 'i-lucide-brush', color: 'bg-blue-50 text-blue-600' },
-    { name: 'AC Repair', icon: 'i-tabler-snowflake', color: 'bg-cyan-50 text-cyan-600' },
-    { name: 'Plumbing', icon: 'i-tabler-droplet', color: 'bg-orange-50 text-orange-600' },
-    { name: 'Electric', icon: 'i-tabler-plug-connected', color: 'bg-yellow-50 text-yellow-600' },
+    { name: 'Cleaning', icon: 'i-ph-broom-bold', color: 'bg-blue-50 text-blue-600' },
+    { name: 'AC Repair', icon: 'i-ph-wind-bold', color: 'bg-cyan-50 text-cyan-600' },
+    { name: 'Plumbing', icon: 'i-ph-pipe-wrench-bold', color: 'bg-orange-50 text-orange-600' },
+    { name: 'Electric', icon: 'i-ph-plug-bold', color: 'bg-yellow-50 text-yellow-600' },
 ];
 ---
 
 <Layout>
-    <main class="p-6 pb-28 max-w-2xl mx-auto">
-        <div class="relative p-8 rounded-3xl shadow-xl bg-neutral-900 overflow-hidden group">
-            <div class="absolute -right-4 -top-4 h-32 w-32 bg-yellow-400 opacity-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-            <div class="absolute left-1/2 top-0 h-full w-1/2 bg-gradient-to-l from-white/5 to-transparent"></div>
-
-            <div class="relative z-10">
-                <span class="text-yellow-400 text-[10px] font-black uppercase tracking-widest bg-yellow-400/10 px-2 py-1 rounded-md">New Service</span>
-                <h2 class="text-3xl font-bold text-white mt-4 leading-tight">
+    <main p-6 pb-32 max-w-2xl mx-auto>
+        <!-- Hero Section -->
+        <div relative p-8 rounded-3xl shadow-xl bg-neutral-900 overflow-hidden group>
+            <div absolute="-right-4 -top-4" h-32 w-32 bg-yellow-400 opacity-20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700></div>
+            
+            <div relative z-10>
+                <span text="yellow-400 [9px]" font-black uppercase tracking-widest bg="yellow-400/10" px-2 py-1 rounded-md>Promo Minggu Ini</span>
+                <h2 text="3xl white" font-black mt-4 leading-tight>
                     Modern Home <br/> Solutions.
                 </h2>
-                <p class="text-neutral-400 text-sm mt-2 mb-5 font-medium">
-                    Simplify your lifestyle with SACare.
-                </p>
-                <a href="/layanan" class="mt-6 px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-bold rounded-xl text-xs transition-all active:scale-95">
+                <p text="neutral-400 sm" mt-2 mb-6 font-medium>Simplify your lifestyle with SACare.</p>
+                <a href="/layanan" bg-yellow-400 hover:bg-yellow-500 text-neutral-900 px-6 py-3 rounded-2xl font-bold text-xs transition-all active:scale-95 inline-block>
                     Explore Now
                 </a>
             </div>
         </div>
 
-        <section class="mt-10">
-            <div class="flex justify-between items-end mb-6">
+        <!-- Categories -->
+        <section mt-10>
+            <div flex="~ justify-between items-end" mb-6 px-1>
                 <div>
-                    <h3 class="text-xl font-bold text-neutral-800 italic">Our Services</h3>
-                    <p class="text-xs text-neutral-500 font-medium">Apa yang rumah Anda butuhkan?</p>
+                    <h3 text="xl neutral-900" font-black italic tracking-tight>Our Services</h3>
+                    <p text="xs neutral-400" font-bold>Kategori Layanan</p>
                 </div>
-                <a href="/services" class="text-[10px] font-black text-neutral-400 hover:text-neutral-800 tracking-tighter transition-colors">VIEW ALL</a>
+                <a href="/layanan" text="[10px] neutral-400 hover:neutral-900" font-black tracking-tighter transition-colors uppercase>View All</a>
             </div>
 
-            <div class="grid grid-cols-4 gap-4">
+            <div grid="~ cols-4" gap-2>
                 {services.map((s) => (
-                    <a href={`/layanan?category=${s.name.toLowerCase()}`} class="flex flex-col items-center group">
-                        <div class={`w-14 h-14 ${s.color} rounded-2xl flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:-translate-y-1 transition-all duration-300 border border-transparent group-hover:border-current/10`}>
+                    <a href={`/layanan?category=${s.name.toLowerCase()}`} flex="~ col items-center" class="group">
+                        <div 
+                            w-15 h-15 rounded-2xl flex="~ items-center justify-center" 
+                            transition="all duration-300" border="~ transparent"
+                            class={`${s.color} group-hover:shadow-lg group-hover:-translate-y-1 group-hover:border-current/20`}
+                        >
                             <div class={`${s.icon} text-2xl`}></div>
                         </div>
-                        <span class="text-[10px] mt-3 font-bold text-neutral-500 uppercase tracking-tighter group-hover:text-neutral-800 transition-colors">
+                        <span text="[10px] neutral-500 group-hover:neutral-900" mt-3 font-bold uppercase tracking-tighter transition-colors>
                             {s.name}
                         </span>
                     </a>
@@ -61,66 +58,33 @@ const services = [
             </div>
         </section>
 
-        <section class="mt-12">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-neutral-800 italic">Popular Choice</h3>
-                <div class="flex items-center gap-1 px-3 py-1 bg-green-100 rounded-full">
-                    <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-[10px] font-bold text-green-700 uppercase">Top Rated</span>
+        <!-- Popular List -->
+        <section mt-12>
+            <div flex="~ justify-between items-center" mb-6 px-1>
+                <h3 text="xl neutral-900" font-black italic tracking-tight>Popular Choice</h3>
+                <div flex="~ items-center gap-1.5" px-3 py-1 bg-green-50 rounded-full border="~ green-100">
+                    <div w-1.5 h-1.5 bg-green-500 rounded-full class="animate-pulse"></div>
+                    <span text="[9px] green-700" font-black uppercase>Top Rated</span>
                 </div>
             </div>
 
-            <div class="space-y-4">
-                {popularChoices.length > 0 ? (
-                    popularChoices.map((service) => (
-                        <div class="group bg-white p-5 rounded-3xl border border-neutral-100 flex items-center space-x-5 shadow-sm hover:shadow-xl hover:border-neutral-200 transition-all duration-500">
-                            <div class="relative w-24 h-24 shrink-0 overflow-hidden rounded-2xl bg-neutral-100">
-                                <img 
-                                    src={service.img} 
-                                    alt={service.name}
-                                    class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                                />
-                            </div>
-
-                            <div class="flex-grow">
-                                <div class="flex justify-between items-start">
-                                    <h4 class="text-lg font-bold text-neutral-800 group-hover:text-yellow-600 transition-colors">
-                                        {service.name}
-                                    </h4>
-                                    <div class="flex items-center gap-1 bg-neutral-50 px-2 py-1 rounded-lg">
-                                        <i class="i-tabler-star-filled text-[10px] text-yellow-500"></i>
-                                        <span class="text-xs font-black text-neutral-700">{service.rate}</span>
-                                    </div>
-                                </div>
-                                <p class="text-xs text-neutral-500 mt-1 line-clamp-1">
-                                    {service.description}
-                                </p>
-
-                                <div class="flex justify-between items-center mt-4">
-                                    <div>
-                                        <p class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Starts from</p>
-                                        <p class="text-xl font-black text-neutral-900">
-                                            Rp { (service.price / 1000).toFixed(0) }k
-                                        </p>
-                                    </div>
-                                    <a 
-                                        href={`/layanan?id=${service.id}`}
-                                        class="bg-neutral-900 text-white p-3 rounded-2xl hover:bg-yellow-400 hover:text-neutral-900 transition-all active:scale-90 shadow-lg shadow-neutral-200"
-                                    >
-                                        <div class="i-tabler-arrow-right text-xl"></div>
-                                    </a>
+            <PopularChoiceList server:defer>
+                <div slot="fallback" space-y-4>
+                    {[1, 2, 3].map(() => (
+                        <div bg-neutral-50 p-5 rounded-3xl border="~ neutral-100" flex="~ items-center gap-5" class="animate-pulse">
+                            <div w-24 h-24 bg-neutral-200 rounded-2xl shrink-0></div>
+                            <div flex-grow space-y-3>
+                                <div h-4 bg-neutral-200 rounded w-1/2></div>
+                                <div h-3 bg-neutral-200 rounded w-full></div>
+                                <div flex="~ justify-between" mt-4>
+                                    <div h-6 bg-neutral-200 rounded w-1/4></div>
+                                    <div w-10 h-10 bg-neutral-200 rounded-xl></div>
                                 </div>
                             </div>
                         </div>
-                    ))
-                ) : (
-                    // Empty State
-                    <div class="py-10 border-2 border-dashed border-neutral-100 rounded-3xl flex flex-col items-center justify-center bg-neutral-50">
-                        <div class="i-tabler-mood-empty text-4xl text-neutral-300 mb-2"></div>
-                        <p class="text-xs text-neutral-400 font-medium">Layanan populer belum tersedia.</p>
-                    </div>
-                )}
-            </div>
+                    ))}
+                </div>
+            </PopularChoiceList>
         </section>
     </main>
 </Layout>

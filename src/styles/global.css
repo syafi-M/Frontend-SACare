@@ -1,0 +1,150 @@
+/* --- 1. Keyframes (Tanpa Duplikasi) --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleInBubble {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes scaleInX {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes slideUpNav {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 2. Global Utility & Animation Classes --- */
+:global(.line-clamp-2) {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:global(.animate-fade-out) {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+:global(.animate-slide-in) {
+  animation: slideInRight 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+:global(.animate-slide-up) {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+:global(.animate-scale-in-bubble) {
+  animation: scaleInBubble 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+:global(.animate-scale-in-x) {
+  animation: scaleInX 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+:global(.animate-shimmer) {
+  animation: shimmer 1.5s infinite;
+}
+
+/* --- 3. Component Specific Styles --- */
+
+/* Stagger Load Helper */
+.stagger-load > div {
+  opacity: 0;
+}
+
+/* Service Card */
+:global(.service-card) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(.service-card:hover) {
+  transform: translateY(-4px);
+}
+
+/* Modals */
+#modal-content {
+  animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#service-modal:not(.hidden) {
+  animation: fadeIn 0.3s ease-out;
+}
+
+#cart-modal {
+  display: flex;
+}
+
+#cart-modal.hidden {
+  display: none;
+}
+
+/* Navigation */
+nav {
+  /* animation: slideUpNav 0.5s ease-out; */
+  /* Safe area support */
+  /* padding-bottom: env(safe-area-inset-bottom); */
+}
+
+@supports (padding-bottom: max(1px)) {
+  nav {
+    /* padding-bottom: max(12px, env(safe-area-inset-bottom)); */
+  }
+}
+
+nav a, nav button {
+  /* will-change: transform, color, background-color; */
+}
+
+/* --- 4. Accessibility & Modifiers --- */
+:global(.opacity-50) {
+  opacity: 0.5;
+}
+
+:global(.pointer-events-none) {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  nav, nav a, nav button, :global([class*="animate-"]) {
+    /* animation: none !important; */
+    /* transition: none !important; */
+  }
+}
+
+/* Optimization */
+.will-change-transform {
+  will-change: transform;
+}
+
+/* Safe Area Inset Support */
+:root {
+  --sab: env(safe-area-inset-bottom);
+}

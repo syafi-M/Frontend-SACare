@@ -2,545 +2,405 @@
 // src/pages/layanan/index.astro
 import Layout from '../../layouts/Layout.astro';
 import Select from '../../components/Select.astro';
-import ServiceCard from '../../components/ServiceCard.astro';
-import { serviceApi } from '../../services/serviceApi';
 import { SORT_OPTIONS } from '../../types/service';
+import ServiceGrid from '../../components/ServiceGrid.astro';
 
 // 1. Ambil kategori dari URL Search Params
 const category = Astro.url.searchParams.get('category');
-
-// 2. Ambil data yang sudah difilter sejak awal
-const initialServices = await serviceApi.getAllServices('popular', category);
-
-// Pastikan handle jika hasil filter kosong
-const mostPopularId = initialServices.length > 0 
-  ? initialServices.reduce((prev, current) => prev.rateCount > current.rateCount ? prev : current).id
-  : null;
 ---
 
-<Layout title="Home Service">
-  <div class="m-5 mt-8 pb-32">
-    <div class="mb-8" style="animation: fadeIn 0.4s ease-out forwards;">
-      <p class="font-semibold uppercase text-neutral-500/70 text-sm tracking-wide">
+<Layout title="Layanan SACare">
+  <div m="5 t-8" pb-32>
+    <!-- Header Section -->
+    <div mb-8 class="animate-fade-in animate-duration-400">
+      <p font-semibold uppercase text="neutral-500/70 sm" tracking-wide>
         Services • Jakarta {category && `• ${category}`}
       </p>
-      <h1 class="text-4xl font-bold text-neutral-800 mt-2">Browse Services</h1>
-      {category && (
-        <a href="/layanan" class="text-xs text-blue-600 font-bold hover:underline mt-2 inline-block">
-          ← Reset Filter
-        </a>
-      )}
+      <h1 text="4xl neutral-900" font-black mt-2 tracking-tight>Browse Services</h1>
     </div>
 
+    <!-- Filter Section -->
     <Select
       id="sort-filter"
       label="Sort By:"
       options={[...SORT_OPTIONS]}
-      className="mb-8"
-      style="animation: fadeIn 0.4s ease-out 0.2s forwards;"
+      mb-8
+      class="animate-fade-in animate-duration-400 animate-delay-200"
     />
 
+    <!-- Grid Section -->
     <div
       id="services-list"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      role="region"
-      aria-label="Services catalog"
+      mt-4 grid="~ cols-1 md:cols-2 lg:cols-3" gap-6
+      class="stagger-load"
     >
-      {initialServices.map((service, index) => (
-        <div
-          style={`animation: fadeIn 0.4s ease-out ${300 + index * 100}ms forwards;`}
-          onclick={`window.openServiceModal(${service.id})`}
-          class="cursor-pointer"
-        >
-          <ServiceCard
-            service={service}
-            isPopular={service.id === mostPopularId}
-          />
+      <ServiceGrid server:defer category={category}>
+        <div slot="fallback" contents>
+          <!-- Skeleton Loading yang Identik dengan ServiceCard -->
+          {[1, 2, 3, 4, 5, 6].map(() => (
+            <div bg-white rounded-2xl border="~ neutral-100" overflow-hidden shadow-sm>
+              <div h-64 bg-neutral-200 class="animate-pulse"></div>
+              <div p-6 space-y-4>
+                <div h-5 bg-neutral-200 w-3/4 rounded-lg class="animate-pulse"></div>
+                <div h-4 bg-neutral-100 w-full rounded-lg class="animate-pulse"></div>
+                <div flex="~ justify-between items-center" pt-4 border="t neutral-50">
+                  <div h-6 bg-neutral-200 w-24 rounded-lg class="animate-pulse"></div>
+                  <div h-8 bg-neutral-200 w-20 rounded-lg class="animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </ServiceGrid>
     </div>
 
-    <!-- Loading State -->
+    <!-- Loading Indicator untuk Sorting -->
     <div
       id="loading-indicator"
-      class="hidden fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50"
-      style="animation: fadeIn 0.3s ease-out forwards;"
+      hidden fixed inset-0 z-60
+      flex="~ items-center justify-center" 
+      bg="black/10" backdrop="blur-sm"
     >
-      <div class="flex flex-col items-center gap-4">
-        <div class="w-12 h-12 border-4 border-neutral-200 border-t-neutral-800 rounded-full animate-spin"></div>
-        <p class="text-neutral-600 font-medium">Sorting services...</p>
+      <div flex="~ col items-center gap-4" bg-white p-8 rounded-3xl shadow-2xl>
+        <div w-12 h-12 border="4 neutral-100 t-yellow-500" rounded-full class="animate-spin"></div>
+        <p text-neutral-600 font-bold>Memperbarui...</p>
       </div>
     </div>
   </div>
 
-  <!-- Service Detail Modal -->
+  <!-- Service Detail Modal (Compact) -->
   <div
     id="service-modal"
-    class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm transition-all duration-300"
+    class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300"
     onclick="if(event.target.id === 'service-modal') window.closeServiceModal()"
   >
     <div
       id="modal-content"
-      class="bg-white w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-all duration-300 max-h-[90vh] overflow-y-auto"
+      bg-white w="full sm:max-w-md" mx-auto
+      max-h="[85vh]" overflow-y-auto shadow-2xl
+      class="sm:rounded-3xl rounded-t-3xl transform transition-transform duration-300"
     >
       <!-- Modal Header -->
-      <div id="modal-header" class="sticky top-0 bg-white border-b border-neutral-200 p-6 flex items-center justify-between rounded-t-3xl">
-        <h2 id="modal-title" class="text-2xl font-bold text-neutral-900">Service Detail</h2>
-        <button
-          onclick="window.closeServiceModal()"
-          class="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-          aria-label="Close modal"
-        >
-          <div class="i-tabler-x text-2xl text-neutral-600"></div>
+      <div sticky top-0 z-10 bg-white p-4 border="b neutral-100" flex="~ items-center justify-between">
+        <h2 id="modal-title" text-xs font-black uppercase tracking-widest text-neutral-400>Detail Layanan</h2>
+        <button onclick="window.closeServiceModal()" p-1 hover="bg-neutral-100" rounded-full transition-colors>
+          <div class="i-ph-x-bold text-xl text-neutral-500"></div>
         </button>
       </div>
 
       <!-- Modal Body -->
-      <div class="p-6 space-y-6">
-        <!-- Image Gallery -->
-        <div class="relative rounded-2xl overflow-hidden bg-neutral-100">
-          <img
-            id="modal-image"
-            src=""
-            alt="Service image"
-            class="w-full h-96 object-cover"
-          />
-          <div id="modal-badge" class="absolute top-4 left-4 bg-yellow-500/90 backdrop-blur-md rounded-full px-4 py-2 shadow-md hidden">
-            <span class="text-sm font-semibold text-neutral-800 flex items-center gap-2">
-              <i class="i-tabler-crown"></i>
-              Most Booked
+      <div p-5 space-y-5>
+        <div relative rounded-xl overflow-hidden bg-neutral-100 aspect-video>
+          <img id="modal-image" src="" alt="" w-full h-full object-cover />
+          <div id="modal-badge" hidden absolute top-3 left-3 p="x-3 y-1" bg="yellow-500/90" backdrop="blur-md" rounded-full>
+            <span text="[10px] neutral-900" font-black flex="~ items-center gap-1" uppercase>
+              <div class="i-ph-crown-simple-fill"></div> Most Booked
             </span>
-          </div>
-          <div class="absolute top-4 right-4 flex items-center gap-2 bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-md">
-            <i class="i-tabler-star-filled text-yellow-500"></i>
-            <span id="modal-rating" class="font-semibold text-neutral-900">4.8</span>
-            <span id="modal-reviews" class="text-neutral-600 text-sm">(120)</span>
           </div>
         </div>
 
-        <!-- Service Info -->
-        <div>
-          <h1 id="modal-service-name" class="text-3xl font-bold text-neutral-900 mb-2">Service Name</h1>
-          <p id="modal-service-description" class="text-neutral-600 text-lg leading-relaxed">Service description</p>
+        <div text-center sm:text-left>
+          <h1 id="modal-service-name" text="2xl neutral-900" font-black leading-tight>Nama Layanan</h1>
+          <p id="modal-service-description" text="neutral-500 sm" leading-relaxed mt-2>Deskripsi...</p>
         </div>
 
         <!-- Price Section -->
-        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200">
-          <div class="flex justify-between items-baseline mb-4">
-            <span class="text-neutral-600">Price per Hour</span>
-            <span id="modal-price" class="text-4xl font-bold text-neutral-900">Rp 150.000</span>
+        <div p-4 rounded-xl border="~ neutral-100" bg-neutral-50 flex="~ justify-between items-center">
+          <div>
+            <p text="[10px] neutral-400" font-bold uppercase tracking-tighter>Estimasi Harga</p>
+            <span id="modal-price" text="2xl yellow-600" font-black>Rp 0</span>
           </div>
-          <p class="text-sm text-neutral-600">Harga sudah termasuk semua layanan profesional</p>
+          <span text="xs neutral-400" font-medium>/ sesi</span>
         </div>
 
-        <!-- Service Details -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
-            <div class="flex items-center gap-2 mb-2">
-              <i class="i-tabler-users text-yellow-500 text-xl"></i>
-              <span class="font-semibold text-neutral-900">Professional Team</span>
-            </div>
-            <p class="text-sm text-neutral-600">Tim bersertifikat dan berpengalaman</p>
-          </div>
-
-          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
-            <div class="flex items-center gap-2 mb-2">
-              <i class="i-tabler-clock text-blue-500 text-xl"></i>
-              <span class="font-semibold text-neutral-900">Flexible Schedule</span>
-            </div>
-            <p class="text-sm text-neutral-600">Booking sesuai jam kenyamanan Anda</p>
-          </div>
-
-          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
-            <div class="flex items-center gap-2 mb-2">
-              <i class="i-tabler-shield-check text-green-500 text-xl"></i>
-              <span class="font-semibold text-neutral-900">Guaranteed Quality</span>
-            </div>
-            <p class="text-sm text-neutral-600">Kepuasan pelanggan 100% terjamin</p>
-          </div>
-
-          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
-            <div class="flex items-center gap-2 mb-2">
-              <i class="i-tabler-truck-delivery text-purple-500 text-xl"></i>
-              <span class="font-semibold text-neutral-900">Fast Delivery</span>
-            </div>
-            <p class="text-sm text-neutral-600">Pengiriman dalam 2-4 jam</p>
-          </div>
+        <!-- Grid Info -->
+        <div grid="~ cols-2" gap-3>
+           <div p-3 bg-white border="~ neutral-100" rounded-xl flex="~ items-center gap-2">
+              <div class="i-ph-users-three-bold text-yellow-500 lg"></div>
+              <p text="[11px] neutral-900" font-bold>Pro Team</p>
+           </div>
+           <!-- Tambahkan item grid lainnya di sini -->
         </div>
 
-        <!-- Customer Reviews Preview -->
-        <div class="border-t border-neutral-200 pt-6">
-          <h3 class="text-lg font-bold text-neutral-900 mb-4">Customer Reviews</h3>
-          <div class="space-y-3">
-            <div class="bg-neutral-50 rounded-xl p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <div class="flex">
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                </div>
-                <span class="font-semibold text-neutral-900">Excellent Service</span>
-              </div>
-              <p class="text-sm text-neutral-600">"Sangat memuaskan, tim profesional dan hasil kerja bagus!"</p>
-              <p class="text-xs text-neutral-500 mt-2">- Ahmad K.</p>
-            </div>
-
-            <div class="bg-neutral-50 rounded-xl p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <div class="flex">
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                  <i class="i-tabler-star-filled text-yellow-500 text-sm"></i>
-                </div>
-                <span class="font-semibold text-neutral-900">Very Recommended</span>
-              </div>
-              <p class="text-sm text-neutral-600">"Puas banget, cepat dan rapi. Akan order lagi!"</p>
-              <p class="text-xs text-neutral-500 mt-2">- Siti M.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="sticky bottom-0 bg-white border-t border-neutral-200 p-6 space-y-3 rounded-b-3xl">
-        <button
+        <button 
           onclick="window.addToCartFromModal()"
-          class="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-neutral-900 font-bold py-4 rounded-xl transition-all duration-300 active:scale-95 shadow-lg flex items-center justify-center gap-2"
+          w-full py-4 bg-neutral-900 text-white font-bold rounded-2xl
+          active="scale-95" transition-all shadow="lg shadow-neutral-200"
+          flex="~ items-center justify-center gap-2"
         >
-          <i class="i-tabler-shopping-cart text-xl"></i>
-          Add to Cart
-        </button>
-        <button
-          onclick="window.closeServiceModal()"
-          class="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold py-3 rounded-xl transition-colors"
-        >
-          Close
+          <div class="i-ph-shopping-cart-simple-bold"></div>
+          <span>Add to Cart</span>
         </button>
       </div>
     </div>
   </div>
 </Layout>
 
-<style>
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  :global(.service-card) {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  :global(.service-card:hover) {
-    transform: translateY(-4px);
-  }
-
-  :global(.animate-fade-out) {
-    animation: fadeOut 0.3s ease-out forwards;
-  }
-
-  :global(.opacity-50) {
-    opacity: 0.5;
-  }
-
-  :global(.pointer-events-none) {
-    pointer-events: none;
-  }
-
-  #modal-content {
-    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  #service-modal:not(.hidden) {
-    animation: fadeIn 0.3s ease-out;
-  }
-</style>
-
 <script>
   import { actions } from 'astro:actions';
   import { serviceApi } from '../../services/serviceApi';
   import { cartManager } from '../../services/cartService';
 
-  const selectEl = document.querySelector('#sort-filter') as HTMLSelectElement;
-  const container = document.querySelector('#services-list') as HTMLElement;
-  const loadingIndicator = document.querySelector('#loading-indicator') as HTMLElement;
-  const serviceModal = document.getElementById('service-modal');
-  const urlParams = new URLSearchParams(window.location.search);
-  const currentCategory = urlParams.get('category')
+  /**
+   * UNO_SAFELIST: 
+   * i-ph-check-circle-fill i-ph-crown-fill i-ph-star-fill text-green-400 text-yellow-500
+   * fixed bottom-24 right-4 bg-neutral-900 text-white px-6 py-4 rounded-2xl shadow-2xl z-[60] 
+   * flex items-center gap-3 animate-fade-in animate-fade-out font-bold text-sm
+   * border border-neutral-200 rounded-2xl bg-white overflow-hidden group relative h-64 
+   * w-full h-full object-cover transition-transform duration-500 group-hover:scale-110
+   * absolute top-4 left-4 bg-yellow-500/90 backdrop-blur-md rounded-full px-3 py-1 shadow-md
+   * text-[10px] font-bold text-neutral-900 flex items-center gap-1 uppercase italic
+   * top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-md rounded-full px-2 py-1 shadow-sm
+   * p-6 text-lg font-bold text-neutral-800 mb-2 text-neutral-500 text-sm line-clamp-2 mb-4
+   * flex justify-between items-center pt-4 border-t border-neutral-100 text-lg font-black 
+   * text-neutral-900 text-[10px] text-neutral-400 font-medium bg-neutral-900 text-white 
+   * px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-transform
+   */
 
-  let currentServiceId: number | null = null;
+  let servicesCache = [];
+  let currentServiceId = null;
 
-  // Store services untuk modal
-  let servicesCache: any[] = [];
+  const getEls = () => ({
+    selectEl: document.querySelector('#sort-filter'),
+    container: document.querySelector('#services-list'),
+    loadingIndicator: document.querySelector('#loading-indicator'),
+    serviceModal: document.getElementById('service-modal')
+  });
 
-  // Open modal
-  window.openServiceModal = async (serviceId: number) => {
-    currentServiceId = serviceId;
-    const service = servicesCache.find(s => s.id === serviceId) || await serviceApi.getServiceById(serviceId);
-
-    if (!service) {
-      console.error('Service not found');
-      return;
-    }
-
-    // Update modal content
-    document.getElementById('modal-title')!.textContent = service.name;
-    document.getElementById('modal-service-name')!.textContent = service.name;
-    document.getElementById('modal-service-description')!.textContent = service.description;
-    document.getElementById('modal-image')!.src = service.img;
-    document.getElementById('modal-rating')!.textContent = String(service.rate);
-    document.getElementById('modal-reviews')!.textContent = `(${service.rateCount})`;
-    document.getElementById('modal-price')!.textContent = `Rp ${service.price.toLocaleString('id-ID')}`;
-
-    // Show/hide badge
-    const badge = document.getElementById('modal-badge');
-    const allServices = servicesCache;
-    const mostPopular = allServices.reduce((prev: any, current: any) =>
-      prev.rateCount > current.rateCount ? prev : current
-    );
-
-    if (service.id === mostPopular.id && badge) {
-      badge.classList.remove('hidden');
-    } else if (badge) {
-      badge.classList.add('hidden');
-    }
-
-    // Show modal
-    serviceModal?.classList.remove('hidden');
-  };
-
-  // Close modal
-  window.closeServiceModal = () => {
-    serviceModal?.classList.add('hidden');
-    currentServiceId = null;
-  };
-
-  // Add to cart from modal
-  window.addToCartFromModal = async () => {
-    if (!currentServiceId) return;
-
-    const service = servicesCache.find(s => s.id === currentServiceId);
-    if (!service) return;
-
-    cartManager.addToCart(service, 1, 1);
-
-    // Show success message
-    const toast = document.createElement('div');
-    toast.className = 'fixed bottom-24 right-4 bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg z-50 flex items-center gap-2 animate-slide-up';
-    toast.innerHTML = `
-      <i class="i-tabler-check text-xl"></i>
-      <span>${service.name} ditambahkan ke keranjang</span>
-    `;
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      toast.remove();
-    }, 3000);
-
-    window.closeServiceModal();
-  };
-
-  // Initial render
   async function init() {
+    const { selectEl, container } = getEls();
     const urlParams = new URLSearchParams(window.location.search);
-    const categoryFromUrl = urlParams.get('category');
-    const idFromUrl = urlParams.get('id'); // Ambil ID dari URL
+    const idFromUrl = urlParams.get('id');
+    const currentCategory = urlParams.get('category');
 
-    const initial = await serviceApi.getAllServices('popular', currentCategory);
-    servicesCache = initial;
+    // 1. Sinkronisasi Data Awal
+    servicesCache = window.servicesCache || [];
 
-    // Render initial services
-    if (initial.length > 0) {
-      renderServices(initial, initial.reduce((prev: any, current: any) =>
-        prev.rateCount > current.rateCount ? prev : current
-      ).id);
-      // 3. AUTO-OPEN MODAL jika ada ID di URL
-        if (idFromUrl) {
-            const serviceId = parseInt(idFromUrl);
-            // Beri sedikit delay agar render selesai dulu
-            setTimeout(() => {
-                window.openServiceModal(serviceId);
-            }, 100);
+    const handleAutoOpen = async () => {
+      if (idFromUrl) {
+        const serviceId = parseInt(idFromUrl);
+        // Tunggu sebentar jika data sedang loading dari tempat lain
+        if (servicesCache.length === 0) {
+           const { data } = await actions.getSortedServices({ sortBy: 'default', category: currentCategory });
+           if (data) servicesCache = data;
         }
-    } else {
-      container!.innerHTML = `<div class="col-span-full text-center py-20 text-neutral-500">Tidak ada layanan ditemukan untuk kategori ini.</div>`;
-    }
-  }
+        window.openServiceModal(serviceId);
+      }
+    };
 
-  function renderServices(services: any[], mostPopularId: number) {
-    servicesCache = services;
+    // 2. Jalankan Auto Open
+    handleAutoOpen();
 
-    const html = services
-      .map((service, index) => {
-        const isMostPopular = service.id === mostPopularId;
-        return `
-          <div
-            style="animation: fadeIn 0.4s ease-out ${index * 80}ms forwards; cursor: pointer;"
-            onclick="window.openServiceModal(${service.id})"
-          >
-            <article
-              class="service-card border border-neutral-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
-              data-service-id="${service.id}"
-            >
-              <div class="relative overflow-hidden bg-neutral-100">
-                <img
-                  src="${service.img}"
-                  alt="${service.name}"
-                  loading="lazy"
-                  decoding="async"
-                  class="w-full h-64 object-cover rounded-t-xl transition-transform duration-500 group-hover:scale-110"
-                />
-                ${isMostPopular ? `
-                  <div class="absolute top-4 left-4 bg-yellow-500/90 backdrop-blur-md rounded-full px-3 py-1 shadow-md" style="animation: slideInRight 0.3s ease-out ${index * 40}ms forwards;">
-                    <span class="text-xs font-semibold text-neutral-800 flex items-center gap-1">
-                      <i class="i-tabler-crown text-base"></i>
-                      Most Booked
-                    </span>
-                  </div>
-                ` : ''}
-                <div class="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-md rounded-full px-3 py-1 shadow-md" style="animation: slideInRight 0.3s ease-out ${100 + index * 40}ms forwards;">
-                  <i class="i-tabler-star-filled text-xs text-yellow-500"></i>
-                  <span class="text-xs font-semibold text-neutral-800">${service.rate}</span>
-                  <span class="text-neutral-700/70 text-[10px]">(${service.rateCount})</span>
-                </div>
-              </div>
-              <div class="p-6 flex flex-col h-full">
-                <div class="flex-grow mb-4">
-                  <h3 class="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-neutral-900 transition-colors duration-200">${service.name}</h3>
-                  <p class="text-neutral-600 text-sm line-clamp-2 group-hover:text-neutral-700 transition-colors duration-200">${service.description}</p>
-                </div>
-                <div class="flex justify-between items-center pt-4 border-t border-neutral-100 group-hover:border-neutral-200 transition-colors duration-200">
-                  <p class="text-xl font-bold text-neutral-800 group-hover:text-neutral-900 transition-colors duration-200">
-                    Rp ${service.price.toLocaleString('id-ID')}
-                    <span class="text-xs text-neutral-500 font-normal"> / jam</span>
-                  </p>
-                  <button
-                    class="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition-all duration-200 font-medium text-sm active:scale-95 focus:ring-2 focus:ring-neutral-800 focus:ring-offset-2"
-                    aria-label="View details"
-                    onclick="event.stopPropagation(); window.openServiceModal(${service.id})"
-                  >
-                    Details
-                  </button>
-                </div>
-              </div>
-            </article>
-          </div>
-        `;
-      })
-      .join('');
+    // 3. Event Listener untuk Sort Filter
+    selectEl?.addEventListener('change', async (e) => {
+      const { container, loadingIndicator } = getEls();
+      const sortBy = e.target.value;
 
-    container!.innerHTML = html;
-  }
+      loadingIndicator?.classList.remove('hidden');
+      container?.classList.add('opacity-40', 'pointer-events-none');
 
-  if (selectEl && container) {
-    selectEl.addEventListener('change', async (event) => {
-      const sortBy = (event.target as HTMLSelectElement).value;
-
-      try {
-        loadingIndicator?.classList.remove('hidden');
-        container.classList.add('opacity-50', 'pointer-events-none');
-
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        const { data, error } = await actions.getSortedServices({
-          sortBy: sortBy as any,
-          category: currentCategory
-        });
-
-        if (error || !data) {
-          console.error('Failed to sort services');
+      const { data, error } = await actions.getSortedServices({ sortBy, category: currentCategory });
+      
+      if (!error && data) {
+        renderServices(data);
+        // Beri jeda halus untuk animasi
+        setTimeout(() => {
+          container?.classList.remove('opacity-40', 'pointer-events-none');
           loadingIndicator?.classList.add('hidden');
-          container.classList.remove('opacity-50', 'pointer-events-none');
-          return;
-        }
-
-        container.classList.add('animate-fade-out');
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        const mostPopularService = data.reduce((prev: any, current: any) =>
-          prev.rateCount > current.rateCount ? prev : current
-        );
-
-        renderServices(data, mostPopularService.id);
-        container.classList.remove('animate-fade-out', 'opacity-50', 'pointer-events-none');
-        void container.offsetWidth;
-
-      } catch (error) {
-        console.error('Sort error:', error);
-      } finally {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        loadingIndicator?.classList.add('hidden');
+        }, 300);
       }
     });
   }
 
-  // Initialize
-  init();
-</script>
+  window.openServiceModal = async (serviceId) => {
+    currentServiceId = serviceId;
+    const { serviceModal } = getEls();
+    if (!serviceModal) return;
 
+    let service = servicesCache.find(s => s.id === serviceId);
+    if (!service) service = await serviceApi.getServiceById(serviceId);
+    if (!service) return;
+
+    // Mapping UI
+    const setContent = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setContent('modal-title', service.name);
+    setContent('modal-service-name', service.name);
+    setContent('modal-service-description', service.description);
+    setContent('modal-price', `Rp ${service.price.toLocaleString('id-ID')}`);
+    
+    const imgEl = document.getElementById('modal-image');
+    if (imgEl) imgEl.src = service.img;
+
+    // Badge Most Popular
+    const badge = document.getElementById('modal-badge');
+    if (servicesCache.length > 0 && badge) {
+      const mostPopular = servicesCache.reduce((prev, curr) => (prev.rateCount || 0) > (curr.rateCount || 0) ? prev : curr);
+      service.id === mostPopular.id ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+    }
+
+    serviceModal.classList.remove('hidden', 'modal-hide');
+    serviceModal.classList.add('modal-show');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeServiceModal = () => {
+    const { serviceModal } = getEls();
+    if (!serviceModal) return;
+
+    serviceModal.classList.add('modal-hide');
+    setTimeout(() => {
+      serviceModal.classList.add('hidden');
+      serviceModal.classList.remove('modal-hide', 'modal-show');
+      document.body.style.overflow = '';
+      
+      // Bersihkan URL dari parameter ID tanpa reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete('id');
+      window.history.replaceState({}, '', url);
+    }, 300);
+  };
+
+  window.addToCartFromModal = () => {
+    const service = servicesCache.find(s => s.id === currentServiceId);
+    if (!service) return;
+    cartManager.addToCart(service, 1, 1);
+    showToast(`${service.name} masuk keranjang!`);
+    window.closeServiceModal();
+  };
+
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-24 right-4 bg-neutral-900 text-white px-6 py-4 rounded-2xl shadow-2xl z-[60] flex items-center gap-3 animate-fade-in';
+    // Menggunakan Phosphor Icons Check Circle
+    toast.innerHTML = `<div class="i-ph-check-circle-fill text-green-400 text-xl"></div><span class="font-bold text-sm">${message}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('animate-fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  function renderServices(services) {
+    const { container } = getEls();
+    if (!container) return;
+    
+    servicesCache = services;
+    const mostPopularId = services.length > 0 
+      ? services.reduce((p, c) => (p.rateCount || 0) > (c.rateCount || 0) ? p : c).id 
+      : null;
+
+    container.innerHTML = services.map((service, index) => {
+      const isPopular = service.id === mostPopularId;
+      
+      return `
+      <div 
+        style="animation: fadeIn 0.4s ease-out ${index * 50}ms forwards; opacity: 0;" 
+        onclick="window.openServiceModal(${service.id})"
+        class="cursor-pointer"
+      >
+        <article class="group border border-neutral-200 rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col">
+          <!-- Image Section -->
+          <div class="relative overflow-hidden bg-neutral-100 h-64">
+            <img 
+              src="${service.img}" 
+              alt="${service.name}" 
+              class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 rounded-t-xl"
+            />
+
+            ${isPopular ? `
+              <div class="absolute top-4 left-4 px-3 py-1 bg-yellow-500/90 backdrop-blur-md rounded-full shadow-md animate-slide-in">
+                <span class="text-xs font-semibold text-neutral-800 flex items-center gap-1">
+                  <div class="i-ph-crown-simple-duotone text-base"></div>
+                  Most Booked
+                </span>
+              </div>` : ''}
+
+            <div class="absolute top-4 right-4 px-3 py-1 flex items-end gap-x-1 bg-white/90 backdrop-blur-md rounded-full shadow-md animate-slide-in">
+              <div class="i-ph-star-fill text-[14px] text-yellow-500"></div>
+              <span class="text-xs font-semibold text-neutral-800">${service.rate}</span>
+              <span class="text-neutral-700/70 text-[10px]">(${service.rateCount})</span>
+            </div>
+          </div>
+
+          <!-- Content Section -->
+          <div class="p-6 flex flex-col flex-1">
+            <div class="flex-grow mb-4">
+              <h3 class="text-lg font-semibold text-neutral-800 mb-2 group-hover:text-neutral-900 transition-colors duration-200">
+                ${service.name}
+              </h3>
+              <p class="text-neutral-600 text-sm line-clamp-2 group-hover:text-neutral-700 transition-colors duration-200">
+                ${service.description}
+              </p>
+            </div>
+
+            <div class="flex justify-between items-center pt-4 border-t border-neutral-100 group-hover:border-neutral-200 transition-colors duration-200">
+              <p class="text-xl font-bold text-neutral-800 group-hover:text-neutral-900 transition-colors duration-200">
+                Rp ${service.price.toLocaleString('id-ID')}
+                <span class="text-xs text-neutral-500 font-normal"> / jam</span>
+              </p>
+              
+              <button 
+                class="flex items-center gap-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition-all duration-200 font-medium text-sm active:scale-95"
+                onclick="event.stopPropagation(); window.openServiceModal(${service.id})"
+              >
+                <span>Details</span>
+                <div class="i-ph-arrow-right-bold text-xs"></div>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    `}).join('');
+  }
+
+  // selectEl?.addEventListener('change', async (e) => {
+  //   const sortBy = e.target.value;
+  //   loadingIndicator?.classList.remove('hidden');
+  //   container?.classList.add('opacity-40', 'pointer-events-none');
+  //   const { data, error } = await actions.getSortedServices({ sortBy, category: currentCategory });
+  //   if (!error && data) {
+  //     container?.classList.add('animate-fade-out');
+  //     setTimeout(() => {
+  //       renderServices(data);
+  //       container?.classList.remove('animate-fade-out', 'opacity-40', 'pointer-events-none');
+  //       loadingIndicator?.classList.add('hidden');
+  //     }, 300);
+  //   }
+  // });
+
+  // Best Practice untuk Astro View Transitions
+  document.addEventListener('astro:page-load', init);
+</script>
 <style is:global>
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+  /* Animasi Masuk */
+  .modal-show {
+    display: flex !important;
+  }
+  .modal-show #modal-content {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+
+  /* Animasi Keluar */
+  .modal-hide #modal-content {
+    animation: slideDown 0.3s ease-in forwards;
+  }
+  .modal-hide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in;
   }
 
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  #services-list > div {
-    opacity: 0;
+  @keyframes slideDown {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(100%); opacity: 0; }
   }
 </style>

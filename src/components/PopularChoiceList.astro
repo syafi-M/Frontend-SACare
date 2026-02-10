@@ -1,0 +1,79 @@
+---
+// src/components/PopularChoiceList.astro
+import { serviceApi } from "../services/serviceApi";
+
+const allServices = await serviceApi.getAllServices('popular');
+const popularChoices = allServices.slice(0, 3);
+---
+
+<div grid="~ cols-1 sm:cols-3" gap-5> <!-- Gunakan grid agar rapi di desktop -->
+    {popularChoices.length > 0 ? (
+        popularChoices.map((service) => (
+            <div 
+                bg-white p-4 rounded-3xl border="~ neutral-100" 
+                flex="~ col gap-4" 
+                shadow="sm hover:xl" transition="all duration-500"
+                class="group hover:border-yellow-200"
+            >
+                <!-- Image di Atas -->
+                <div relative w-full h-48 overflow-hidden rounded-2xl bg-neutral-100>
+                    <img 
+                        src={service.img} 
+                        alt={service.name}
+                        absolute inset-0 w-full h-full object-cover 
+                        transition="transform duration-700"
+                        class="group-hover:scale-110" 
+                    />
+                    <!-- Rating Badge Overlay di Gambar -->
+                    <div absolute top-3 right-3 flex="~ items-center gap-1" bg="white/90" backdrop="blur-md" px-2 py-1 rounded-lg shadow-sm border="~ neutral-100">
+                        <div class="i-ph-star-fill text-yellow-500 text-[12px]"></div>
+                        <span text="[11px] neutral-900" font-black>{service.rate}</span>
+                    </div>
+                </div>
+                
+                <!-- Content di Bawah -->
+                <div flex-grow px-1>
+                    <div flex="~ justify-between items-start" mb-1>
+                        <h4 
+                            text="lg neutral-900" font-black transition-colors leading-tight
+                            class="group-hover:text-yellow-600"
+                        >
+                            {service.name}
+                        </h4>
+                    </div>
+
+                    <p text="xs neutral-400" line-clamp-2 font-medium leading-relaxed>
+                        {service.description}
+                    </p>
+
+                    <div flex="~ justify-between items-end" mt-5>
+                        <div>
+                            <p text="[9px] neutral-400" font-bold uppercase tracking-widest leading-none mb-1.5>Starts from</p>
+                            <p text="2xl neutral-900" font-black leading-none>
+                                Rp{(service.price / 1000).toFixed(0)}<span text-sm>k</span>
+                            </p>
+                        </div>
+                        <a 
+                            href={`/layanan?id=${service.id}`}
+                            p-3.5 rounded-2xl transition-all shadow="lg neutral-200"
+                            bg-neutral-900 text-white 
+                            hover="bg-yellow-400 text-neutral-900" 
+                            active="scale-90"
+                        >
+                            <div class="i-ph-arrow-right-bold text-xl"></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        ))
+    ) : (
+        <div 
+            py-12 border="2 dashed neutral-200" rounded-3xl 
+            flex="~ col items-center justify-center" bg-neutral-50
+            class="col-span-full"
+        >
+            <div class="i-ph-smiley-blank-bold text-4xl text-neutral-300 mb-3"></div>
+            <p text="sm neutral-400" font-bold>Layanan belum tersedia</p>
+        </div>
+    )}
+</div>

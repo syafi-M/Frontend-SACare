@@ -1,7 +1,15 @@
 import { defineMiddleware } from "astro:middleware";
 
-export const onRequest = defineMiddleware((context, next) => {
-    const session = context.cookies.get("user_session");
-    context.locals.user = session ? session.json() : null;
-    return next();
+export const onRequest = defineMiddleware(async (context, next) => {
+  const session = context.cookies.get("user_session");
+  
+  if (session) {
+    try {
+      context.locals.user = JSON.parse(session.value);
+    } catch {
+      context.locals.user = null;
+    }
+  }
+
+  return next();
 });

@@ -10,13 +10,28 @@ const { serviceId, serviceName, class: className = "" } = Astro.props;
 ---
 
 <button
-  class={`group relative px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-neutral-900 font-semibold rounded-lg transition-all duration-200 active:scale-95 focus:ring-2 focus:ring-yellow-300 ${className}`}
+  relative px-4 py-2 
+  bg="yellow-400 hover:yellow-500"
+  text="neutral-900"
+  font="semibold"
+  border="rounded-lg"
+  transition="all duration-200"
+  active="scale-95"
+  focus="ring-2 ring-yellow-300"
+  class={`group ${className}`}
+  
   onclick={`window.addToCart(${serviceId}, '${serviceName}')`}
   aria-label={`Add ${serviceName} to cart`}
 >
-  <div class="flex items-center gap-2">
+  <div flex="~ items-center gap-2">
     <span>Add to Cart</span>
-    <div class="i-tabler-shopping-bag text-lg group-hover:scale-110 transition-transform" />
+    
+    <!-- Tagify: Menggunakan ikon sebagai tag kustom -->
+    <i-lucide-shopping-cart 
+      text="lg" 
+      transition="transform"
+      class="group-hover:scale-110"
+    />
   </div>
 </button>
 
@@ -48,33 +63,3 @@ const { serviceId, serviceName, class: className = "" } = Astro.props;
     }, 2000);
   };
 </script>
-
-<style>
-  @keyframes slideUp {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
-
-  :global(.animate-slide-up) {
-    animation: slideUp 0.3s ease-out;
-  }
-
-  :global(.animate-fade-out) {
-    animation: fadeOut 0.3s ease-out forwards;
-  }
-</style>

@@ -55,11 +55,7 @@ export const server = {
 
       // LOGIKA DUMMY (Dijalankan jika mode = dummy)
       console.log("Running in Dummy Mode...");
-      const dummyServices = [
-        { id: 1, name: 'Cleaning Service', price: 150000, rate: 4.8 },
-        { id: 2, name: 'AC Service', price: 200000, rate: 4.5 },
-      ];
-      // ... logika sorting dummy kamu ...
+      const dummyServices = await serviceApi.getAllServices(input.sortBy as SortType);
       return dummyServices;
     }
   }),

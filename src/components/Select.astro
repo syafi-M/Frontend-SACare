@@ -1,4 +1,5 @@
 ---
+// /src/components/Select.astro
 interface Option {
   value: string;
   label: string;
@@ -34,7 +35,7 @@ const { id, label, options, defaultValue, className = "", style = "" } = Astro.p
     </select>
     
     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 group-hover:text-neutral-600">
-      <div class="i-tabler-chevron-down text-base"></div>
+      <div class="i-material-symbols-keyboard-arrow-down-rounded text-base"></div>
     </div>
   </div>
 </div>

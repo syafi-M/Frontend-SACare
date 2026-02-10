@@ -1,0 +1,40 @@
+---
+// src/components/UserProfile.astro
+// Komponen ini akan dijalankan di server secara tertunda (deferred)
+const user = Astro.locals.user || {
+  name: "Tamu",
+  email: "guest@sacare.com",
+  avatar: null
+};
+
+// Simulasi delay (opsional, untuk melihat efek server island)
+// await new Promise(resolve => setTimeout(resolve, 10000));
+---
+
+<div flex="~ col items-center" mb-10 class="animate-fade-in">
+  <div relative group>
+    <div 
+      w-24 h-24 md="w-32 h-32" rounded-3xl bg-yellow-400 
+      flex="~ items-center justify-center" 
+      text="4xl neutral-800" font-black shadow-xl border="4 white" 
+      overflow-hidden transition-transform group-hover:scale-105
+    >
+      {user.avatar ? (
+        <img src={user.avatar} alt={user.name} w-full h-full object-cover />
+      ) : (
+        <span>{user.name.charAt(0)}</span>
+      )}
+    </div>
+    <!-- Decorative dot -->
+    <div absolute bottom-2 right-2 w-5 h-5 bg-green-500 border="4 white" rounded-full></div>
+  </div>
+  
+  <h1 text="2xl neutral-900" font-black mt-5 tracking-tight>{user.name}</h1>
+  <p text="neutral-400 sm" font-medium>{user.email}</p>
+  
+  <div flex="~ gap-2" mt-4>
+    <span px-3 py-1 bg-yellow-100 text="yellow-700 [10px]" font-black uppercase tracking-widest rounded-full border="~ yellow-200">
+      Member Gold
+    </span>
+  </div>
+</div>

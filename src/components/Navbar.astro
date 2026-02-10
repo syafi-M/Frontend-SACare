@@ -1,162 +1,180 @@
 ---
-import { cartManager } from "../services/cartService";
-
-// Import icons jika menggunakan preset-icons
-// Pastikan paket @iconify-json/tabler dan @iconify-json/lucide terinstal
+// Navbar.astro
+const { pathname } = Astro.url;
 ---
 
-<nav class="flex items-center justify-between h-16 px-4 bg-white border-b border-neutral-100 static top-0 z-50">
-  <div class="flex items-center flex-1 mr-4">
-    <div class="relative w-full max-w-md">
+<nav h-16 px-4 pt-6 bg-white border-b border-neutral-100 sticky top-0 z-50 flex="~ items-center justify-between">
+  <!-- Search Area -->
+  <div flex-1 mr-4 flex items-center>
+    <div relative w-full max-w-md id="search-container"> <!-- Tambah ID container -->
       <input 
-        id="global-search"
-        type="text" 
-        placeholder="Cari layanan (misal: AC, Cuci)" 
-        class="w-full p-2.5 pl-10 rounded-xl focus:outline-none bg-neutral-100 border border-transparent focus:border-yellow-400 focus:bg-white transition-all text-sm"
+        id="global-search" type="text" 
+        placeholder="Cari layanan..." 
+        class="peer"
+        bg-neutral-100 border="~ transparent" focus:border-yellow-400 focus:bg-white
+        w-full p-2.5 pl-10 rounded-xl outline-none transition-all text-sm
+        autocomplete="off"
       >
-      <div class="i-tabler-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></div>
-
       <div 
-        id="search-results" 
-        class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden z-[60] max-h-96 overflow-y-auto"
+        i-ph-magnifying-glass 
+        absolute left-3 top="1/2" 
+        class="-translate-y-1/2 text-gray-400 transition-colors peer-focus:text-yellow-500"
+      ></div>
+
+      <!-- Search Results Dropdown -->
+      <div id="search-results" 
+        class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden z-60 max-h-96 overflow-y-auto"
       >
-        <div id="search-list" class="divide-y divide-neutral-50">
-          </div>
+        <div id="search-list" class="divide-y divide-neutral-50"></div>
       </div>
     </div>
   </div>
 
-  <div>
-    <a href="/cart" class="relative text-gray-600 hover:text-gray-800 focus:outline-none p-2 block">
-      <div class="i-tabler-shopping-cart text-2xl"></div>
-      <span id="cart-badge" class="absolute hidden top-1 right-1 inline-flex items-center justify-center text-center min-w-5 min-h-5 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full border-2 border-white">
-        0
-      </span>
-    </a>
-  </div>
+  <!-- Cart Badge -->
+  <a href="/cart" relative p-2 block hover:text-gray-800 text-gray-600 transition-colors>
+    <div i-ph-shopping-cart text-2xl class={pathname === '/cart' ? 'text-yellow-500' : ''}></div>
+    <span id="cart-badge" class="hidden absolute top-1 right-1 flex items-center justify-center min-w-5 min-h-5 text-[10px] text-white font-bold bg-red-600 rounded-full border-2 border-white translate-x-1/2 -translate-y-1/2">
+      0
+    </span>
+  </a>
 </nav>
-
-<style is:global>
-  @keyframes searchReveal {
-    from {
-      opacity: 0;
-      transform: translateY(-10px) scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  @keyframes searchHide {
-    from {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(-10px) scale(0.98);
-    }
-  }
-
-  .animate-search-in {
-    animation: searchReveal 0.2s ease-out forwards;
-  }
-
-  .animate-search-out {
-    animation: searchHide 0.15s ease-in forwards;
-    pointer-events: none;
-  }
-</style>
 
 <script>
   import { cartManager } from '../services/cartService';
   import { serviceApi } from '../services/serviceApi';
 
-  const searchInput = document.getElementById('global-search') as HTMLInputElement;
-  const searchResults = document.getElementById('search-results');
-  const searchList = document.getElementById('search-list');
+  function initNavbar() {
+    const searchContainer = document.getElementById('search-container');
+    const searchInput = document.getElementById('global-search') as HTMLInputElement;
+    const searchResults = document.getElementById('search-results');
+    const searchList = document.getElementById('search-list');
+    const badge = document.getElementById('cart-badge');
+    let searchTimeout: ReturnType<typeof setTimeout>;
 
-  function showResults() {
-    searchResults.classList.remove('hidden', 'animate-search-out');
-    searchResults.classList.add('animate-search-in');
-  }
-
-  function hideResults() {
-    searchResults.classList.add('animate-search-out');
-    searchResults.classList.remove('animate-search-in');
-    
-    // Tunggu animasi selesai (150ms) baru sembunyikan total
-    setTimeout(() => {
-      if (searchResults.classList.contains('animate-search-out')) {
-        searchResults.classList.add('hidden');
-      }
-    }, 150);
-  }
-
-  // Logic Search
-  searchInput?.addEventListener('input', async (e) => {
-    const query = e.target.value.toLowerCase();
-    
-    if (query.length < 2) {
-      hideResults();
-      return;
-    }
-
-    // Logic filter (sama seperti kode sebelumnya)
-    const allServices = await serviceApi.getAllServices();
-    const filtered = allServices.filter(s => 
-      s.name.toLowerCase().includes(query) || 
-      s.category.toLowerCase().includes(query)
-    );
-
-    if (filtered.length > 0) {
-      renderSearchItems(filtered);
-      showResults();
-    } else {
-      searchList.innerHTML = `<div class="p-4 text-center text-xs text-neutral-400 italic">Layanan tidak ditemukan</div>`;
-      showResults();
-    }
-  });
-
-  // Tutup dropdown jika klik di luar
-  document.addEventListener('click', (e) => {
-    if (!searchInput?.contains(e.target as Node) && !searchResults?.contains(e.target as Node)) {
-      searchResults?.classList.add('hidden');
-    }
-  });
-
-  function renderSearchItems(items) {
-    searchList.innerHTML = items.map((service, index) => `
-      <a 
-        href="/layanan?id=${service.id}" 
-        class="flex items-center gap-3 p-3 hover:bg-neutral-50 transition-all group border-l-2 border-transparent hover:border-yellow-400"
-        style="animation: searchReveal 0.3s ease-out ${index * 0.05}s forwards; opacity: 0;"
-      >
-        <img src="${service.img}" class="w-10 h-10 rounded-lg object-cover" />
-        <div class="flex-1">
-          <p class="text-sm font-bold text-neutral-800">${service.name}</p>
-          <p class="text-[10px] text-neutral-500 uppercase">${service.category}</p>
-        </div>
-        <p class="text-xs font-bold text-neutral-900">Rp ${service.price / 1000}k</p>
-      </a>
-    `).join('');
-  }
-
-  // Logic Badge (Sama seperti sebelumnya)
-  function updateBadge() {
-    const badge = document.querySelector('#cart-badge');
-    const total = cartManager.getTotalItems();
-    if (badge) {
-      if (total > 0) {
+    const updateBadge = () => {
+      const total = cartManager.getTotalItems();
+      if (badge) {
         badge.textContent = total.toString();
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
+        total > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
       }
+    };
+
+    const showResults = (htmlContent: string) => {
+      if (!searchResults || !searchList) return;
+      
+      searchList.innerHTML = htmlContent;
+      searchResults.classList.remove('hidden');
+      searchResults.classList.add('animate-search-show');
+
+      // Berikan delay stagger pada setiap item hasil
+      const items = searchList.querySelectorAll('.search-item-anim');
+      items.forEach((item, index) => {
+        (item as HTMLElement).style.animationDelay = `${index * 40}ms`;
+      });
+    };
+
+    const hideResults = () => {
+      searchResults?.classList.add('hidden');
+      searchResults?.classList.remove('animate-search-show');
+    };
+
+    // SEARCH LOGIC
+    searchInput?.addEventListener('input', async (e) => {
+      const query = (e.target as HTMLInputElement).value.toLowerCase().trim();
+      
+      clearTimeout(searchTimeout);
+
+      if (query.length < 2) {
+        hideResults();
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        const services = await serviceApi.getAllServices();
+        const filtered = services.filter(s => 
+          s.name.toLowerCase().includes(query) || 
+          s.category.toLowerCase().includes(query)
+        );
+  
+        if (filtered.length > 0) {
+          const html = filtered.map(s => `
+            <a href="/layanan?id=${s.id}" class="search-item-anim flex items-center gap-3 p-3 hover:bg-yellow-50 transition-all border-l-4 border-transparent hover:border-yellow-400">
+              <img src="${s.img}" class="w-10 h-10 rounded-lg object-cover bg-neutral-100" />
+              <div class="flex-1">
+                <p class="text-sm font-bold text-neutral-800">${s.name}</p>
+                <p class="text-[10px] text-neutral-400 uppercase font-semibold">${s.category}</p>
+              </div>
+              <p class="text-xs font-black text-yellow-600">Rp ${(s.price/1000).toFixed(0)}k</p>
+            </a>
+          `).join('');
+          showResults(html);
+        } else {
+          showResults(`
+            <div class="p-8 text-center animate-search-show">
+              <div class="i-ph-magnifying-glass-light text-4xl mx-auto text-neutral-200 mb-3"></div>
+              <p class="text-sm text-neutral-500 font-medium">Layanan tidak ditemukan</p>
+              <p class="text-[10px] text-neutral-400">Coba kata kunci lain</p>
+            </div>
+          `);
+        }
+      }, 300)
+
+    });
+
+    // CLOSE ON CLICK OUTSIDE
+    document.addEventListener('click', (e) => {
+      if (!searchContainer?.contains(e.target as Node)) {
+        hideResults();
+      }
+    });
+
+    // CLOSE ON ESCAPE KEY
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hideResults();
+    });
+
+    // INITIAL LOAD
+    updateBadge();
+    window.addEventListener('cart-updated', updateBadge);
+  }
+
+  // Support Astro Transitions
+  initNavbar();
+  document.addEventListener('astro:page-load', initNavbar);
+</script>
+
+<style is:global>
+  @keyframes searchSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 
-  updateBadge();
-  window.addEventListener('cart-updated', updateBadge);
-</script>
+  @keyframes itemReveal {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Class untuk container dropdown */
+  .animate-search-show {
+    display: block !important;
+    animation: searchSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Class untuk item hasil pencarian */
+  .search-item-anim {
+    opacity: 0;
+    animation: itemReveal 0.3s ease-out forwards;
+  }
+</style>

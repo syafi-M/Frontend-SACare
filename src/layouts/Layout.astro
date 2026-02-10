@@ -1,7 +1,9 @@
 ---
+// Layout.astro
 import BottomNav from "../components/BottomNav.astro";
 import Navbar from "../components/Navbar.astro";
-// Import CSS Reset Tailwind via UnoCSS
+import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
 import "@unocss/reset/tailwind.css";
 
 import "@fontsource-variable/montserrat";
@@ -9,30 +11,22 @@ import "@fontsource-variable/inter";
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="id">
 	<head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>SAC Modern Home Solutions</title>
+		<meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<ClientRouter />
+        <title>SACare - Modern Home Solutions</title>
     </head>
 
     <body
-        class="bg-neutral-50 text-neutral-800"
-        style="font-family: 'Inter Variable', sans-serif;"
-    >
-		<!-- Navbar Component -->
-        <Navbar />
+		bg-neutral-50 text-neutral-800 margin-0 width-full min-h-screen
+		font-inter font-sans
+	>
+		<Navbar transition:persist/>
+		<main>
 		<slot />
-		<!-- Bottom Navigation Component -->
-        <BottomNav />
+		</main>
+		<BottomNav transition:persist/>
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

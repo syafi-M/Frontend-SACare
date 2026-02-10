@@ -1,4 +1,5 @@
 ---
+// BottomNav.astro
 const { pathname } = Astro.url;
 
 // Fungsi pembantu untuk cek apakah path sedang aktif
@@ -9,114 +10,117 @@ const navItems = [
     {
         name: "Home",
         href: "/homepage",
-        icon: "i-tabler-home",
-        activeIcon: "i-tabler-home-filled",
+        icon: "i-ph-house-line",
+        activeIcon: "i-ph-house-line-duotone",
     },
     {
         name: "Layanan",
         href: "/layanan",
-        icon: "i-mdi-shopping-outline",
-        activeIcon: "i-mdi-shopping",
+        icon: "i-ph-list-bullets",
+        activeIcon: "i-ph-list-bullets-duotone",
     },
     {
         name: "Pesanan",
         href: "/orders/history",
-        icon: "i-tabler-clipboard-list",
-        activeIcon: "i-tabler-clipboard-list-filled",
+        icon: "i-ph-notepad",
+        activeIcon: "i-ph-notepad-duotone",
     },
     {
         name: "Profile",
         href: "/profile",
-        icon: "i-tabler-user-circle",
-        activeIcon: "i-tabler-user-circle-filled",
+        icon: "i-ph-user",
+        activeIcon: "i-ph-user-duotone",
     },
 ];
 ---
 
 <nav
-    class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-neutral-100/50 shadow-2xl z-40 transition-all duration-300"
-    style="height: 76px; padding-bottom: max(16px, env(safe-area-inset-bottom));"
+    fixed bottom-0 left-0 right-0 z-40
+    bg="white/95"
+    backdrop="blur-xl"
+    border="t neutral-100/50"
+    shadow="2xl"
+    transition="all duration-300"
+    class="pb-[env(safe-area-inset-bottom)]"
+    style="height: calc(76px + env(safe-area-inset-bottom));"
 >
-    <div class="flex justify-around items-center h-full px-2 sm:px-4">
+    <div flex="~ justify-around items-center" h-full px="2 sm:4" max-w-lg mx-auto>
         {
             navItems.map((item, index) => {
                 const active = isActive(item.href);
                 return (
                     <>
-                        {/* Booking Button di tengah */}
+                        {/* Booking Button di tengah (Antara Layanan & Pesanan) */}
                         {index === 2 && (
-                            <a href="/cart" class="relative flex flex-col items-center justify-center -translate-y-6">
-                                <div class="relative group">
+                            <a 
+                                href="/cart" 
+                                data-astro-prefetch="hover"
+                                relative flex="~ col items-center justify-center" 
+                                class="-translate-y-6 active:scale-90 transition-transform"
+                            >
+                                <div relative class="group">
                                     <button
-                                        class="relative bg-gradient-to-br from-yellow-300 to-yellow-500 hover:from-yellow-400 hover:to-yellow-600 text-neutral-900 w-16 h-16 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-yellow-300/50 flex items-center justify-center overflow-hidden font-bold"
-                                        aria-label="Create booking"
+                                        relative w-15 h-15 rounded-full overflow-hidden font-bold
+                                        flex="~ items-center justify-center"
+                                        class="bg-gradient-to-br from-yellow-300 to-yellow-500 hover:from-yellow-400 hover:to-yellow-600"
+                                        text="neutral-900"
+                                        shadow="xl hover:2xl"
+                                        transition="all duration-300"
+                                        focus="ring-4 ring-yellow-300/50"
+                                        aria-label="Buka Keranjang"
                                     >
-                                        {/* Shimmer effect */}
-                                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 group-hover:animate-shimmer"></div>
+                                        <div absolute inset-0 opacity-0 transition-opacity duration-500 
+                                             bg="gradient-to-r from-transparent via-white/30 to-transparent"
+                                             class="group-hover:opacity-100 group-hover:animate-shimmer" />
                                         
-                                        {/* Icon with rotation */}
-                                        <div class="relative i-tabler-plus text-3xl group-hover:rotate-90 transition-transform duration-500" />
+                                        <div i-ph-plus-bold 
+                                            relative text-2xl transition-transform duration-500
+                                            class="group-hover:rotate-90" 
+                                        />
                                     </button>
                                     
-                                    {/* Glow effect */}
-                                    <div class="absolute inset-0 bg-yellow-400/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                                    <div absolute inset-0 rounded-full blur-xl opacity-0 transition-opacity duration-300 z--10
+                                         bg="yellow-400/30"
+                                         class="group-hover:opacity-100" />
                                 </div>
-                                
-                                <span class="text-[7px] font-bold mt-2.5 text-neutral-700 uppercase tracking-wider">
-                                    Booking
-                                </span>
+                                <span m="t-2" text="[8px] neutral-700" font-black uppercase tracking-tighter>Booking</span>
                             </a>
                         )}
 
-                        {/* Navigation Items */}
                         <a
                             href={item.href}
-                            class={`group relative flex flex-col items-center justify-center py-2 px-3 rounded-3xl transition-all duration-300 hover:bg-neutral-100/60 ${
-                                active ? 'text-yellow-600' : 'text-neutral-500'
-                            }`}
-                            aria-current={active ? 'page' : undefined}
+                            data-astro-prefetch="load" /* Memuat halaman tujuan saat link muncul di layar */
+                            relative py-1 px-3 rounded-2xl transition-all duration-300
+                            flex="~ col items-center justify-center"
+                            class={`group ${active ? 'text-yellow-600' : 'text-neutral-400 hover:text-neutral-600'}`}
                         >
-                            {/* Active bubble background */}
+                            {/* Indikator Bubble Aktif */}
                             {active && (
-                                <div class="absolute inset-0 bg-gradient-to-br from-yellow-100 to-yellow-50/60 rounded-3xl -z-10 animate-scale-in-bubble"></div>
+                                <div 
+                                    absolute inset-0 bg="yellow-50" rounded-2xl z--10 
+                                    class="animate-scale-in-bubble" 
+                                />
                             )}
 
-                            {/* Icon container */}
-                            <div class="relative flex items-center justify-center h-6">
+                            <div relative flex="~ items-center justify-center" h-7>
                                 <div
-                                    class={`text-2xl transition-all duration-300 ${
-                                        active
-                                            ? `${item.activeIcon} scale-110`
-                                            : `${item.icon} group-hover:scale-110 group-hover:text-neutral-700`
+                                    class={`text-2xl transition-all duration-300 will-change-transform ${
+                                        active ? `${item.activeIcon} scale-110` : `${item.icon} group-hover:scale-105`
                                     }`}
                                 />
                                 
-                                {/* Active indicator glow */}
                                 {active && (
-                                    <div class="absolute -inset-2 bg-yellow-400/15 rounded-full blur-lg -z-10 animate-pulse"></div>
+                                    <div absolute inset--2 rounded-full blur-lg z--20
+                                         bg="yellow-400/10" class="animate-pulse" />
                                 )}
                             </div>
 
-                            {/* Label */}
                             <span
-                                class={`text-[7.5px] mt-1 uppercase font-bold transition-all duration-300 tracking-wider ${
-                                    active
-                                        ? 'text-yellow-700 opacity-100'
-                                        : 'text-neutral-500 group-hover:text-neutral-700 opacity-70'
-                                }`}
+                                mt-1 font-bold tracking-tight transition-all duration-300
+                                class={`text-[10px] ${active ? 'opacity-100' : 'opacity-70'}`}
                             >
                                 {item.name}
                             </span>
-
-                            {/* Bottom indicator line */}
-                            {active && (
-                                <div class="absolute bottom-0 w-8 h-0.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 rounded-full animate-scale-in-x blur-sm"></div>
-                            )}
-                            
-                            {/* Hover effect line */}
-                            {!active && (
-                                <div class="absolute bottom-0 w-0 h-0.5 bg-neutral-400 rounded-full group-hover:w-6 transition-all duration-300"></div>
-                            )}
                         </a>
                     </>
                 );
@@ -124,83 +128,3 @@ const navItems = [
         }
     </div>
 </nav>
-
-<style is:global>
-    @keyframes scaleInBubble {
-        from {
-            transform: scale(0.8);
-            opacity: 0;
-        }
-        to {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    @keyframes scaleInX {
-        from {
-            transform: scaleX(0);
-            opacity: 0;
-        }
-        to {
-            transform: scaleX(1);
-            opacity: 1;
-        }
-    }
-
-    @keyframes shimmer {
-        0% {
-            transform: translateX(-100%);
-        }
-        100% {
-            transform: translateX(100%);
-        }
-    }
-
-    @keyframes slideUpNav {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animate-scale-in-bubble {
-        animation: scaleInBubble 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .animate-scale-in-x {
-        animation: scaleInX 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .animate-shimmer {
-        animation: shimmer 1.5s infinite;
-    }
-
-    nav {
-        animation: slideUpNav 0.5s ease-out;
-    }
-
-    /* Performance optimization */
-    nav a, nav button {
-        will-change: transform, color, background-color;
-    }
-
-    /* Safe area support */
-    @supports (padding-bottom: max(1px)) {
-        nav {
-            padding-bottom: max(12px, env(safe-area-inset-bottom));
-        }
-    }
-
-    /* Reduce motion support */
-    @media (prefers-reduced-motion: reduce) {
-        nav, nav a, nav button {
-            animation: none;
-            transition: none;
-        }
-    }
-</style>
